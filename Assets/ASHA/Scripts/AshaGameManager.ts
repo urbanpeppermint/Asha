@@ -25,6 +25,7 @@ function storageString(prop: StorageProperty<string>, fallback: string): string 
 }
 
 type HandPanelLike = { setEnabled(enabled: boolean): void }
+type SoloPanelLike = { setVisible(visible: boolean): void }
 
 @component
 export class AshaGameManager extends BaseScriptComponent {
@@ -33,13 +34,12 @@ export class AshaGameManager extends BaseScriptComponent {
   @input nextRoundButton: SceneObject   // disabled until host sees reveal
   @input battleLogText: SceneObject     // Text3D for battle log display
 
-  /** When only one human is in the session, add this many AI opponents (VS Computer — like HTML prototype). Set 0 for human-only. */
-  @input aiOpponentCount: number = 2
-
   // ── Shared state (unowned — any player can write) ──────────────────────
   private phaseProp        = StorageProperty.manualString('ashaPhase', 'waiting')
   private roundProp        = StorageProperty.manualInt('ashaRound', 1)
   private totalRoundsProp  = StorageProperty.manualInt('ashaTotalRounds', 5)
+  /** Synced AI slots for solo (1–5). 0 = not chosen yet or multiplayer (no AI). */
+  private aiOpponentCountProp = StorageProperty.manualInt('ashaAiOpponentCount', 0)
 
   // ── Event triggers (increment = fire, onRemoteChange = receive) ────────
   // NetworkedEvent is unavailable — this increment pattern is the equivalent.
@@ -52,11 +52,13 @@ export class AshaGameManager extends BaseScriptComponent {
   private readonly log = new SyncKitLogger(TAG)
   private isReady = false
   private elementHandPanel: HandPanelLike | null = null
+  private soloSetupPanel: SoloPanelLike | null = null
 
   /** Filled on host when resolving a round that includes AI; remotes use real players only. */
   private lastBattleParticipants: BattleParticipant[] | null = null
   private aiScores: number[] = []
   private lastHumanElementChoice = -1
+  private hostBeginAttempts = 0
 
   onAwake() {
     this.syncEntity = new SyncEntity(
@@ -65,6 +67,7 @@ export class AshaGameManager extends BaseScriptComponent {
         this.phaseProp,
         this.roundProp,
         this.totalRoundsProp,
+        this.aiOpponentCountProp,
         this.revealTrigger,
         this.nextRoundTrigger,
         this.gameOverTrigger,
@@ -82,10 +85,45 @@ export class AshaGameManager extends BaseScriptComponent {
   /** Called from ElementHandPanel onAwake — avoids circular module imports. */
   public registerElementHandPanel(panel: HandPanelLike) {
     this.elementHandPanel = panel
-    // If host already advanced to choosing before this panel registered, show it now.
-    if (this.isReady && storageString(this.phaseProp, '') === 'choosing') {
-      panel.setEnabled(true)
-    }
+    this.syncUiToPhase(storageString(this.phaseProp, ''))
+  }
+
+  /** Called from AshaSoloSetupPanel onAwake. */
+  public registerSoloSetupPanel(panel: SoloPanelLike) {
+    this.soloSetupPanel = panel
+    this.syncUiToPhase(storageString(this.phaseProp, ''))
+  }
+
+  /**
+   * Solo flow: pick AI count (1–5) and total rounds, then start `choosing`.
+   * Host only; call from AshaSoloSetupPanel confirm button.
+   */
+  public applySoloSetupAndStart(aiCount: number, totalRounds: number) {
+    if (!this.isReady) return
+    if (!SessionController.getInstance().isHost()) return
+    if (storageString(this.phaseProp, '') !== 'solo_setup') return
+
+    const n = Math.min(5, Math.max(1, Math.floor(aiCount)))
+    const r = [3, 5, 7, 10].includes(Math.floor(totalRounds))
+      ? Math.floor(totalRounds)
+      : 5
+
+    this.aiOpponentCountProp.setPendingValue(n)
+    this.totalRoundsProp.setPendingValue(r)
+    this.log.i(`Solo config: ${n} AI, ${r} rounds`)
+
+    this.phaseProp.setPendingValue('choosing')
+    this.onPhaseChanged('choosing')
+  }
+
+  private sessionHumanCount(): number {
+    const users = SessionController.getInstance().getUsers()
+    return users ? users.length : 0
+  }
+
+  private getAiSlotCount(): number {
+    if (this.sessionHumanCount() !== 1) return 0
+    return Math.min(5, Math.max(0, storageInt(this.aiOpponentCountProp, 0)))
   }
 
   private onReady() {
@@ -99,9 +137,53 @@ export class AshaGameManager extends BaseScriptComponent {
     this.gameOverTrigger.onRemoteChange.add(() => this.onGameOver())
 
     if (SessionController.getInstance().isHost()) {
-      this.log.i('Host: starting game, phase → choosing')
+      const delay = this.createEvent('DelayedCallbackEvent')
+      delay.bind(() => this.hostBeginAfterSceneRegistered())
+      delay.reset(0.1)
+    }
+  }
+
+  /** After AshaPlayerState has registered (getAll reliable). */
+  private hostBeginAfterSceneRegistered() {
+    if (!SessionController.getInstance().isHost()) return
+
+    let humans = this.sessionHumanCount()
+    if (humans === 0 && this.hostBeginAttempts < 8) {
+      this.hostBeginAttempts++
+      const retry = this.createEvent('DelayedCallbackEvent')
+      retry.bind(() => this.hostBeginAfterSceneRegistered())
+      retry.reset(0.15)
+      return
+    }
+    if (humans === 0) {
+      this.log.w('No session users after retries — assuming solo (preview)')
+      humans = 1
+    }
+
+    if (humans === 1) {
+      this.log.i('Host: solo session → solo_setup (pick AI count & rounds)')
+      this.aiOpponentCountProp.setPendingValue(0)
+      this.phaseProp.setPendingValue('solo_setup')
+      this.onPhaseChanged('solo_setup')
+    } else {
+      this.log.i(`Host: ${humans}-player session → choosing`)
+      this.aiOpponentCountProp.setPendingValue(0)
       this.phaseProp.setPendingValue('choosing')
-      this.onPhaseChanged('choosing')   // ← must call directly; host won't receive its own onRemoteChange
+      this.onPhaseChanged('choosing')
+    }
+  }
+
+  private syncUiToPhase(phase: string) {
+    if (!this.isReady) return
+    if (phase === 'solo_setup') {
+      if (this.soloSetupPanel) this.soloSetupPanel.setVisible(true)
+      if (this.elementHandPanel) this.elementHandPanel.setEnabled(false)
+    } else if (phase === 'choosing') {
+      if (this.soloSetupPanel) this.soloSetupPanel.setVisible(false)
+      if (this.elementHandPanel) this.elementHandPanel.setEnabled(true)
+    } else {
+      if (this.soloSetupPanel) this.soloSetupPanel.setVisible(false)
+      if (this.elementHandPanel) this.elementHandPanel.setEnabled(false)
     }
   }
 
@@ -113,14 +195,23 @@ export class AshaGameManager extends BaseScriptComponent {
     const players = AshaPlayerState.getAll()
     if (players.length === 0) return
 
-    const aiSlots = Math.min(Math.max(0, Math.floor(this.aiOpponentCount)), 5)
-    const soloVsAi = players.length === 1 && aiSlots > 0
+    const humansInSession = this.sessionHumanCount()
+    if (humansInSession > 1 && players.length < humansInSession) {
+      this.log.w(
+        `ASHA: ${humansInSession} users in session but ${players.length} AshaPlayerState — add one SceneObject per seat (see SCENE_SETUP.md).`
+      )
+    }
+
+    const aiSlots = this.getAiSlotCount()
+    const soloVsAi = humansInSession === 1 && aiSlots > 0
 
     if (!soloVsAi) {
-      const allReady = players.every(p => p.isReady)
+      if (players.length < humansInSession) return
+      const seats = players.slice(0, humansInSession)
+      const allReady = seats.every(p => p.isReady)
       if (!allReady) {
-        const readyCount = players.filter(p => p.isReady).length
-        this.log.i(`Waiting: ${readyCount}/${players.length} ready`)
+        const readyCount = seats.filter(p => p.isReady).length
+        this.log.i(`Waiting: ${readyCount}/${humansInSession} ready`)
         return
       }
     } else {
@@ -217,18 +308,17 @@ export class AshaGameManager extends BaseScriptComponent {
   private onPhaseChanged(phase: string) {
     this.log.i(`Phase → ${phase}`)
 
-    if (phase === 'choosing') {
-      this.lastBattleParticipants = null
-      // Reset all locally-owned player states for new round
-      AshaPlayerState.getAll().forEach(p => p.resetForRound())
-      if (this.elementHandPanel) this.elementHandPanel.setEnabled(true)
-    } else {
-      if (this.elementHandPanel) this.elementHandPanel.setEnabled(false)
+    if (phase === 'solo_setup') {
+      this.syncUiToPhase('solo_setup')
+      return
     }
 
-    if (phase === 'reveal') {
-      // Battle log is populated in onReveal()
+    if (phase === 'choosing') {
+      this.lastBattleParticipants = null
+      AshaPlayerState.getAll().forEach(p => p.resetForRound())
     }
+
+    this.syncUiToPhase(phase)
   }
 
   // ── Reveal handler (all devices) ────────────────────────────────────────
@@ -296,7 +386,7 @@ export class AshaGameManager extends BaseScriptComponent {
       label: p.displayName,
       score: p.score,
     }))
-    const aiSlots = Math.min(Math.max(0, Math.floor(this.aiOpponentCount)), 5)
+    const aiSlots = this.getAiSlotCount()
     if (humans.length === 1 && aiSlots > 0) {
       for (let i = 0; i < aiSlots; i++) {
         rows.push({

@@ -1,20 +1,20 @@
-- !<AssetImportMetadata/04b0aa2e-c2fd-41ff-9fe8-09fb58766367>
+- !<AssetImportMetadata/470f5c39-931f-43e9-87b0-29fad732baaf>
   ImportedAssetIds:
-    TypeScriptAsset: !<reference> 00c82f98-5a31-4caa-aebb-03d9db39f8f5
+    TypeScriptAsset: !<reference> b0d6f0b1-88d8-46fc-9130-1e24d1f36d32
   ImporterName: TypeScriptAssetImporter
-  PrimaryAsset: !<reference> 00c82f98-5a31-4caa-aebb-03d9db39f8f5
+  PrimaryAsset: !<reference> b0d6f0b1-88d8-46fc-9130-1e24d1f36d32
   PackageType: NotAPackage
   LegacyPackagePolicy: ~
   ExtraData:
     {}
   AssetDataMap:
-    TypeScriptAsset: !<own> 38babe04-d404-4703-8788-7fff673d6eb9
+    TypeScriptAsset: !<own> 02677cd6-8adb-4610-83ae-f3c04b33aee7
   DependentFiles:
     []
   ImporterSettings: !<AssetImporterSettings>
     {}
   CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
-- !<TypeScriptAssetData/38babe04-d404-4703-8788-7fff673d6eb9>
+- !<TypeScriptAssetData/02677cd6-8adb-4610-83ae-f3c04b33aee7>
   SvgIcon: ""
   SetupScript:
     code: ""
@@ -22,12 +22,12 @@
   VersionMajor: 0
   VersionMinor: 0
   VersionPatch: 0
-  ComponentUid: 2129d729-0461-4d08-89b5-ff1340764348
+  ComponentUid: f737b544-b117-4ce7-8184-fd6a7c8c604c
   ExportUid: 00000000-0000-0000-0000-000000000000
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
-    battleLogText: false
-    nextRoundButton: false
+    gameManager: false
+    panelRoot: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -37,11 +37,11 @@
   Attachments:
     []
   DefaultScriptInputs:
-    - nextRoundButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
-      battleLogText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+    - gameManager: !<MappingBased.AssignableType> 00000000-0000-0000-0000-000000000000
+      panelRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
     -
       {}
   InputLines:
-    - // @input SceneObject nextRoundButton
-    - // @input SceneObject battleLogText
+    - // @input AssignableType gameManager
+    - // @input SceneObject panelRoot
