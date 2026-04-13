@@ -1,0 +1,44 @@
+- !<AssetImportMetadata/aacf1573-abce-4e16-bd07-e1c97d245a86>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> 3efc5d4f-5a90-4094-9480-b35e4c33d5d1
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> 3efc5d4f-5a90-4094-9480-b35e4c33d5d1
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> e0a0065a-38a2-48ed-886b-13e6c6d825bc
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/e0a0065a-38a2-48ed-886b-13e6c6d825bc>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 4bb09cc1-4319-46a3-8f52-ddfb96b8e484
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    gameManager: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - gameManager: !<MappingBased.AssignableType> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input AssignableType gameManager

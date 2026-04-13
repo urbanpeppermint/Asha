@@ -17,3 +17,5 @@ Workspaces/**
 
 # Shipped by Lens Studio
 .cursor/
+.agents/
+.cursor/
