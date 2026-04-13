@@ -74,7 +74,8 @@ export class AshaPlayerState extends BaseScriptComponent {
 
   public submitChoice(elementId: number) {
     if (!this.syncEntity || !this.syncEntity.doIOwnStore()) return
-    if (this.readyProp.currentValue === true) return    // already chosen this round
+    // currentValue lags until the store syncs; use currentOrPendingValue for local reads (Sync Kit docs).
+    if (this.readyProp.currentOrPendingValue === true) return
 
     this.log.i(`Choice: ${elementId}`)
     this.choiceProp.setPendingValue(elementId)
@@ -87,8 +88,9 @@ export class AshaPlayerState extends BaseScriptComponent {
 
   public applyDelta(delta: number) {
     if (!this.syncEntity || !this.syncEntity.doIOwnStore()) return
-    // currentValue is a getter — no parentheses
-    this.scoreProp.setPendingValue(this.scoreProp.currentValue + delta)
+    const cur =
+      this.scoreProp.currentOrPendingValue ?? this.scoreProp.currentValue ?? 0
+    this.scoreProp.setPendingValue(cur + delta)
     this.updateDisplay()   // ← local update
   }
 
@@ -100,10 +102,27 @@ export class AshaPlayerState extends BaseScriptComponent {
   }
 
   // ── Getters (safe to read from any device for any player) ───────────────
-  get isReady():     boolean { return this.readyProp.currentValue  === true }
-  get choice():      number  { return this.choiceProp.currentValue }   // getter, no ()
-  get score():       number  { return this.scoreProp.currentValue  }   // getter, no ()
-  get displayName(): string  { return this.nameProp.currentValue   }   // getter, no ()
+  // Prefer currentOrPendingValue: setPendingValue updates it immediately; currentValue updates after network/store apply.
+  get isReady(): boolean {
+    return this.readyProp.currentOrPendingValue === true
+  }
+
+  get choice(): number {
+    const v = this.choiceProp.currentOrPendingValue ?? this.choiceProp.currentValue
+    if (v === null || v === undefined) return -1
+    return v as number
+  }
+
+  get score(): number {
+    const v = this.scoreProp.currentOrPendingValue ?? this.scoreProp.currentValue
+    if (v === null || v === undefined) return 0
+    return v as number
+  }
+
+  get displayName(): string {
+    const v = this.nameProp.currentOrPendingValue ?? this.nameProp.currentValue
+    return v ?? ''
+  }
 
   private updateDisplay() {
     // Replace this stub with your scoreboard Text3D update logic

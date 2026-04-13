@@ -6477,13 +6477,14 @@
   Enabled: true
   ScriptAsset: !<reference> 00c82f98-5a31-4caa-aebb-03d9db39f8f5
   ScriptInputsDefault:
-    {}
+    aiOpponentCount: true
   ScriptTypesDefault:
     {}
   ScriptInputs:
     "":
       nextRoundButton: !<reference.SceneObject> 44478a88-6dd8-4434-a7c7-b5a37b0d4617
       battleLogText: !<reference.SceneObject> 51d41486-5e5c-413a-8f94-cde40c91fdfe
+      aiOpponentCount: !<float> 2.000000
   ScriptTypes:
     "":
       {}

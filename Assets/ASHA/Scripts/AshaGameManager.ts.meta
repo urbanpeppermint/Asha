@@ -26,6 +26,7 @@
   ExportUid: 00000000-0000-0000-0000-000000000000
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
+    aiOpponentCount: false
     battleLogText: false
     nextRoundButton: false
   ScriptTypesHidden:
@@ -39,9 +40,11 @@
   DefaultScriptInputs:
     - nextRoundButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       battleLogText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      aiOpponentCount: !<float> 2.000000
   ScriptTypes:
     -
       {}
   InputLines:
     - // @input SceneObject nextRoundButton
     - // @input SceneObject battleLogText
+    - // @input float aiOpponentCount = 2
