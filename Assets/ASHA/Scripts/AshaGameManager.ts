@@ -33,6 +33,9 @@ export class AshaGameManager extends BaseScriptComponent {
   // Inspector-assigned references
   @input nextRoundButton: SceneObject   // disabled until host sees reveal
   @input battleLogText: SceneObject     // Text3D for battle log display
+  @input titleText: SceneObject
+  @input roundText: SceneObject
+  @input statusText: SceneObject
 
   // ── Shared state (unowned — any player can write) ──────────────────────
   private phaseProp        = StorageProperty.manualString('ashaPhase', 'waiting')
@@ -59,6 +62,7 @@ export class AshaGameManager extends BaseScriptComponent {
   private aiScores: number[] = []
   private lastHumanElementChoice = -1
   private hostBeginAttempts = 0
+  private restartRequested = false
 
   onAwake() {
     this.syncEntity = new SyncEntity(
@@ -141,6 +145,7 @@ export class AshaGameManager extends BaseScriptComponent {
       delay.bind(() => this.hostBeginAfterSceneRegistered())
       delay.reset(0.1)
     }
+    this.setText(this.titleText, 'ASHA — The Mithraic Mysteries')
   }
 
   /** After AshaPlayerState has registered (getAll reliable). */
@@ -187,18 +192,42 @@ export class AshaGameManager extends BaseScriptComponent {
     }
   }
 
+  private getDistinctPlayers(): AshaPlayerState[] {
+    const seen: Record<string, boolean> = {}
+    const out: AshaPlayerState[] = []
+    for (const p of AshaPlayerState.getAll()) {
+      const key = p.ownerConnectionId || p.displayName || `idx_${out.length}`
+      if (seen[key]) continue
+      seen[key] = true
+      out.push(p)
+    }
+    return out
+  }
+
+  private setNextButtonLabel(label: string) {
+    if (!this.nextRoundButton) return
+    const textComp = this.nextRoundButton.getComponent('Component.Text')
+    if (textComp) (textComp as any).text = label
+  }
+
+  private setText(target: SceneObject, value: string) {
+    if (!target) return
+    const textComp = target.getComponent('Component.Text')
+    if (textComp) (textComp as any).text = value
+  }
+
   // ── Called by AshaPlayerState.submitChoice (after local readyProp set) ──
   public checkAllChosen() {
     if (!this.isReady) return
     if (!SessionController.getInstance().isHost()) return
 
-    const players = AshaPlayerState.getAll()
+    const players = this.getDistinctPlayers()
     if (players.length === 0) return
 
     const humansInSession = this.sessionHumanCount()
     if (humansInSession > 1 && players.length < humansInSession) {
       this.log.w(
-        `ASHA: ${humansInSession} users in session but ${players.length} AshaPlayerState — add one SceneObject per seat (see SCENE_SETUP.md).`
+        `ASHA: ${humansInSession} users in session but ${players.length} player states discovered. Keep exactly 1 AshaPlayerState in hierarchy.`
       )
     }
 
@@ -212,11 +241,13 @@ export class AshaGameManager extends BaseScriptComponent {
       if (!allReady) {
         const readyCount = seats.filter(p => p.isReady).length
         this.log.i(`Waiting: ${readyCount}/${humansInSession} ready`)
+        this.setText(this.statusText, `... Awaiting ${readyCount}/${humansInSession}`)
         return
       }
     } else {
       if (!players[0].isReady) {
         this.log.i('Waiting: 0/1 ready')
+        this.setText(this.statusText, '... Awaiting you')
         return
       }
     }
@@ -242,7 +273,9 @@ export class AshaGameManager extends BaseScriptComponent {
         })),
       ]
     } else {
-      participants = players.map(p => ({ name: p.displayName, choice: p.choice }))
+      participants = players
+        .slice(0, humansInSession)
+        .map(p => ({ name: p.displayName, choice: p.choice }))
     }
 
     this.lastBattleParticipants = participants
@@ -261,6 +294,7 @@ export class AshaGameManager extends BaseScriptComponent {
     const trig = storageInt(this.revealTrigger, 0)
     this.revealTrigger.setPendingValue(trig + 1)
     this.phaseProp.setPendingValue('reveal')
+    this.setText(this.statusText, '')
 
     this.onReveal()
     this.onPhaseChanged('reveal')
@@ -279,6 +313,11 @@ export class AshaGameManager extends BaseScriptComponent {
   public advanceToNextRound() {
     if (!this.isReady) return
     if (!SessionController.getInstance().isHost()) return
+
+    if (storageString(this.phaseProp, '') === 'gameover') {
+      this.restartMatch()
+      return
+    }
 
     if (this.nextRoundButton) this.nextRoundButton.enabled = false
 
@@ -304,6 +343,24 @@ export class AshaGameManager extends BaseScriptComponent {
     }
   }
 
+  private restartMatch() {
+    if (this.restartRequested) return
+    this.restartRequested = true
+    this.log.i('Replay requested — restarting match')
+    this.aiScores = []
+    this.lastHumanElementChoice = -1
+    this.lastBattleParticipants = null
+    this.roundProp.setPendingValue(1)
+    this.getDistinctPlayers().forEach(p => p.resetForNewMatch())
+
+    const nextPhase = this.sessionHumanCount() === 1 ? 'solo_setup' : 'choosing'
+    this.phaseProp.setPendingValue(nextPhase)
+    this.onPhaseChanged(nextPhase)
+    if (this.nextRoundButton) this.nextRoundButton.enabled = false
+    this.setNextButtonLabel('Next Round')
+    this.restartRequested = false
+  }
+
   // ── Phase handler (all devices) ─────────────────────────────────────────
   private onPhaseChanged(phase: string) {
     this.log.i(`Phase → ${phase}`)
@@ -315,7 +372,11 @@ export class AshaGameManager extends BaseScriptComponent {
 
     if (phase === 'choosing') {
       this.lastBattleParticipants = null
-      AshaPlayerState.getAll().forEach(p => p.resetForRound())
+      this.getDistinctPlayers().forEach(p => p.resetForRound())
+      const r = storageInt(this.roundProp, 1)
+      const t = storageInt(this.totalRoundsProp, 5)
+      this.setText(this.roundText, `Round ${r} of ${t}`)
+      this.setText(this.statusText, 'Choose your element')
     }
 
     this.syncUiToPhase(phase)
@@ -328,7 +389,7 @@ export class AshaGameManager extends BaseScriptComponent {
     const roster =
       this.lastBattleParticipants && this.lastBattleParticipants.length > 0
         ? this.lastBattleParticipants
-        : AshaPlayerState.getAll().map(p => ({
+        : this.getDistinctPlayers().map(p => ({
             name: p.displayName,
             choice: p.choice,
           }))
@@ -361,6 +422,8 @@ export class AshaGameManager extends BaseScriptComponent {
 
     // Show next-round button on host after a 3-second delay
     if (SessionController.getInstance().isHost()) {
+      const isFinal = storageInt(this.roundProp, 1) >= storageInt(this.totalRoundsProp, 5)
+      this.setNextButtonLabel(isFinal ? 'Replay' : 'Next Round')
       const delay = this.createEvent('DelayedCallbackEvent')
       delay.bind(() => {
         if (this.nextRoundButton) this.nextRoundButton.enabled = true
@@ -381,7 +444,7 @@ export class AshaGameManager extends BaseScriptComponent {
   // ── Game over handler (all devices) ─────────────────────────────────────
   private onGameOver() {
     this.log.i('Game over')
-    const humans = [...AshaPlayerState.getAll()].sort((a, b) => b.score - a.score)
+    const humans = [...this.getDistinctPlayers()].sort((a, b) => b.score - a.score)
     const rows: { label: string; score: number }[] = humans.map(p => ({
       label: p.displayName,
       score: p.score,
@@ -400,5 +463,10 @@ export class AshaGameManager extends BaseScriptComponent {
     rows.forEach((r, i) => {
       this.log.i(`${medals[i] ?? ''} ${r.label}: ${r.score} pts`)
     })
+    this.setText(this.statusText, 'Game over')
+    if (SessionController.getInstance().isHost()) {
+      this.setNextButtonLabel('Replay')
+      if (this.nextRoundButton) this.nextRoundButton.enabled = true
+    }
   }
 }

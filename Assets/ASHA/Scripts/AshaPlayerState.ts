@@ -101,6 +101,14 @@ export class AshaPlayerState extends BaseScriptComponent {
     this.updateDisplay()   // ← local update
   }
 
+  public resetForNewMatch() {
+    if (!this.syncEntity || !this.syncEntity.doIOwnStore()) return
+    this.scoreProp.setPendingValue(0)
+    this.choiceProp.setPendingValue(-1)
+    this.readyProp.setPendingValue(false)
+    this.updateDisplay()
+  }
+
   // ── Getters (safe to read from any device for any player) ───────────────
   // Prefer currentOrPendingValue: setPendingValue updates it immediately; currentValue updates after network/store apply.
   get isReady(): boolean {
@@ -122,6 +130,10 @@ export class AshaPlayerState extends BaseScriptComponent {
   get displayName(): string {
     const v = this.nameProp.currentOrPendingValue ?? this.nameProp.currentValue
     return v ?? ''
+  }
+
+  get ownerConnectionId(): string {
+    return this.syncEntity?.getOwnerConnectionId?.() ?? ''
   }
 
   private updateDisplay() {

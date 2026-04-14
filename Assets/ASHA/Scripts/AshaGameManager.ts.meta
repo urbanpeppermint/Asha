@@ -28,6 +28,9 @@
   ScriptInputsHidden:
     battleLogText: false
     nextRoundButton: false
+    roundText: false
+    statusText: false
+    titleText: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -39,9 +42,15 @@
   DefaultScriptInputs:
     - nextRoundButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       battleLogText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      titleText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      roundText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      statusText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
     -
       {}
   InputLines:
     - // @input SceneObject nextRoundButton
     - // @input SceneObject battleLogText
+    - // @input SceneObject titleText
+    - // @input SceneObject roundText
+    - // @input SceneObject statusText

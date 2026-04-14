@@ -12,7 +12,7 @@ This guide matches **Lens Studio 5.15** + **Spectacles Sync Kit** sample layout.
 | `AshaResolver.ts` | `resolveRound`, `getVerb`, `getWinnerIndices`. |
 | `AshaAiBots.ts` | AI name/emoji lists for solo VS computer. |
 | `AshaGameManager.ts` | Session-scoped phase machine, battle log, host next round, solo vs multi gate. |
-| `AshaPlayerState.ts` | **One per human seat** — owned `SyncEntity`, choice/score/name. |
+| `AshaPlayerState.ts` | **Exactly one object in scene**; per-user state is synced through ownership/store, not by duplicating scene seats. |
 | `ElementHandPanel.ts` | Five element buttons → `submitChoice`. |
 | `AshaSoloSetupPanel.ts` | **Solo only:** AI opponent count (1–5) + rounds (3/5/7/10) + confirm. |
 
@@ -25,7 +25,7 @@ Do **not** edit anything inside `.lspkg` packages.
 | Session | What happens |
 |---------|----------------|
 | **1 user** (Solo / Mocked Online with one preview) | Host enters phase **`solo_setup`**. Player must use **AshaSoloSetupPanel**: pick **number of AI opponents (1–5)** and **total rounds**, then **Confirm**. Then phase **`choosing`** (element hand). |
-| **2+ users** (multiplayer session) | Host skips setup and goes straight to **`choosing`**. **No AI.** You need **one `AshaPlayerState` SceneObject per connected human** in the scene (see §4). |
+| **2+ users** (multiplayer session) | Host skips setup and goes straight to **`choosing`**. **No AI.** Keep exactly **one** `AshaPlayerState` SceneObject in hierarchy. |
 
 The game uses `SessionController.getInstance().getUsers().length` for this split — not the number of preview windows on one machine.
 
@@ -38,7 +38,7 @@ Create or verify this structure **inside** `ColocatedWorld > EnableOnReady`:
 ```
 EnableOnReady
 ├── AshaGameManager              ← SceneObject + script AshaGameManager.ts
-├── AshaPlayerState              ← first human seat (see §4 for copies)
+├── AshaPlayerState              ← single shared player-state object (DO NOT duplicate)
 ├── AshaSoloSetupPanel           ← SceneObject + script AshaSoloSetupPanel.ts
 │   ├── SoloSetup_Root           ← assign to panelRoot (container)
 │   │   ├── Title_Text (optional Text3D)
@@ -65,13 +65,12 @@ EnableOnReady
 
 ---
 
-## 4. Multiplayer: one `AshaPlayerState` per human
+## 4. Multiplayer seat setup (human players)
 
-- For **3 colocated players**, the shared experience should expose **3** `AshaPlayerState` objects (e.g. `PlayerSeat_0`, `PlayerSeat_1`, `PlayerSeat_2`) **siblings under `EnableOnReady`**.
-- Each object gets **one** `AshaPlayerState` component + its own `SyncEntity` ownership (only the owning device can write that seat).
-- **Element hand:** typically only the **local** player’s hand is wired: set `ElementHandPanel.playerState` to the **`AshaPlayerState` that belongs to the local user** (often one hand panel per seat object, or enable only the panel for the owned seat — project-specific).
-
-If the session reports **N users** but the scene has **fewer than N** `AshaPlayerState` components, the host logs a warning and rounds will not resolve until the scene is fixed.
+- **Do not duplicate `AshaPlayerState` SceneObjects.** Duplicate seats cause exactly the repeated logs and broken score rows you reported.
+- Human seats in ASHA are **logical**, not one SceneObject per person.
+- Use one `AshaPlayerState` object + one `ElementHandPanel` object; Sync Kit ownership/session data handles per-user identity.
+- If you need visual chairs/anchors in the arena, create separate **visual seat objects** (`Seat_A`, `Seat_B`, `Seat_C`) with transforms/meshes only; do not attach `AshaPlayerState` to those.
 
 ---
 
@@ -86,7 +85,7 @@ If the session reports **N users** but the scene has **fewer than N** `AshaPlaye
 
 Wire **NextButton** interaction (e.g. SIK `PinchButton` / `Interactable` **trigger** or `RectangleButton` **triggerUpCallbacks**) to **AshaGameManager** → **`advanceToNextRound`**.
 
-### AshaPlayerState (for **each** seat)
+### AshaPlayerState (single object)
 
 | Field | Assign |
 |--------|--------|
@@ -131,7 +130,7 @@ Wire **AI count** buttons to `pickAi1` … `pickAi5`. Wire **round** buttons to 
 
 1. **TypeScript:** zero errors (Window → Utilities → TypeScript Status).  
 2. **Solo:** Start session → **setup panel** → pick AI + rounds → confirm → **five cards** → pick → log + next round.  
-3. **Multi:** Two+ users, N seats → all pick → reveal → next round.
+3. **Multi:** Two+ users, single `AshaPlayerState` object in hierarchy → all pick → reveal → next round.
 
 ---
 
