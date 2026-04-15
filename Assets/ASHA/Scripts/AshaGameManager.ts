@@ -36,6 +36,9 @@ export class AshaGameManager extends BaseScriptComponent {
   @input titleText: SceneObject
   @input roundText: SceneObject
   @input statusText: SceneObject
+  @input arenaOrbScript: ScriptComponent
+  @input vfxScript: ScriptComponent
+  @input revealDelaySec: number = 1.2
 
   // ── Shared state (unowned — any player can write) ──────────────────────
   private phaseProp        = StorageProperty.manualString('ashaPhase', 'waiting')
@@ -139,6 +142,8 @@ export class AshaGameManager extends BaseScriptComponent {
     this.revealTrigger.onRemoteChange.add(() => this.onReveal())
     this.nextRoundTrigger.onRemoteChange.add(() => this.onNextRound())
     this.gameOverTrigger.onRemoteChange.add(() => this.onGameOver())
+    SessionController.getInstance().onUserJoinedSession.add(() => this.onSessionUsersChanged())
+    SessionController.getInstance().onUserLeftSession.add(() => this.onSessionUsersChanged())
 
     if (SessionController.getInstance().isHost()) {
       const delay = this.createEvent('DelayedCallbackEvent')
@@ -146,6 +151,18 @@ export class AshaGameManager extends BaseScriptComponent {
       delay.reset(0.1)
     }
     this.setText(this.titleText, 'ASHA — The Mithraic Mysteries')
+  }
+
+  private onSessionUsersChanged() {
+    if (!SessionController.getInstance().isHost()) return
+    const humans = this.sessionHumanCount()
+    const phase = storageString(this.phaseProp, '')
+    if (phase === 'solo_setup' && humans > 1) {
+      this.log.i('User joined during solo setup — switching to multiplayer choosing')
+      this.aiOpponentCountProp.setPendingValue(0)
+      this.phaseProp.setPendingValue('choosing')
+      this.onPhaseChanged('choosing')
+    }
   }
 
   /** After AshaPlayerState has registered (getAll reliable). */
@@ -206,8 +223,20 @@ export class AshaGameManager extends BaseScriptComponent {
 
   private setNextButtonLabel(label: string) {
     if (!this.nextRoundButton) return
-    const textComp = this.nextRoundButton.getComponent('Component.Text')
-    if (textComp) (textComp as any).text = label
+    const selfText = this.nextRoundButton.getComponent('Component.Text')
+    if (selfText) {
+      (selfText as any).text = label
+      return
+    }
+    const childCount = this.nextRoundButton.getChildrenCount()
+    for (let i = 0; i < childCount; i++) {
+      const c = this.nextRoundButton.getChild(i)
+      const t = c.getComponent('Component.Text')
+      if (t) {
+        ;(t as any).text = label
+        return
+      }
+    }
   }
 
   private setText(target: SceneObject, value: string) {
@@ -266,7 +295,7 @@ export class AshaGameManager extends BaseScriptComponent {
         aiChoices.push(this.pickAiElement())
       }
       participants = [
-        { name: h.displayName, choice: humanChoice },
+        { name: 'Magi 1', choice: humanChoice },
         ...aiChoices.map((choice, i) => ({
           name: `${AI_EMOJIS[i % AI_EMOJIS.length]} ${AI_NAMES[i % AI_NAMES.length]}`,
           choice,
@@ -275,7 +304,7 @@ export class AshaGameManager extends BaseScriptComponent {
     } else {
       participants = players
         .slice(0, humansInSession)
-        .map(p => ({ name: p.displayName, choice: p.choice }))
+        .map((p, i) => ({ name: `Magi ${i + 1}`, choice: p.choice }))
     }
 
     this.lastBattleParticipants = participants
@@ -291,13 +320,21 @@ export class AshaGameManager extends BaseScriptComponent {
       players.forEach((p, i) => p.applyDelta(deltas[i]))
     }
 
-    const trig = storageInt(this.revealTrigger, 0)
-    this.revealTrigger.setPendingValue(trig + 1)
-    this.phaseProp.setPendingValue('reveal')
-    this.setText(this.statusText, '')
+    this.phaseProp.setPendingValue('resolving')
+    this.setText(this.statusText, 'Shuffling the astrolabe...')
+    this.onPhaseChanged('resolving')
 
-    this.onReveal()
-    this.onPhaseChanged('reveal')
+    const delaySec = Math.max(0, this.revealDelaySec)
+    const delay = this.createEvent('DelayedCallbackEvent')
+    delay.bind(() => {
+      const trig = storageInt(this.revealTrigger, 0)
+      this.revealTrigger.setPendingValue(trig + 1)
+      this.phaseProp.setPendingValue('reveal')
+      this.setText(this.statusText, '')
+      this.onReveal()
+      this.onPhaseChanged('reveal')
+    })
+    delay.reset(delaySec)
   }
 
   private pickAiElement(): number {
@@ -377,6 +414,14 @@ export class AshaGameManager extends BaseScriptComponent {
       const t = storageInt(this.totalRoundsProp, 5)
       this.setText(this.roundText, `Round ${r} of ${t}`)
       this.setText(this.statusText, 'Choose your element')
+      this.setText(
+        this.battleLogText,
+        'Hint: Fire beats Earth/Metal, Water beats Fire/Metal, Earth beats Water/Wind, Wind beats Fire/Water, Metal beats Earth/Wind.'
+      )
+      if (this.arenaOrbScript) {
+        const orb = this.arenaOrbScript as any
+        if (orb.onRoundReset) orb.onRoundReset()
+      }
     }
 
     this.syncUiToPhase(phase)
@@ -418,6 +463,14 @@ export class AshaGameManager extends BaseScriptComponent {
     if (this.battleLogText) {
       const textComp = this.battleLogText.getComponent('Component.Text')
       if (textComp) (textComp as any).text = lines.join('\n')
+    }
+    if (this.arenaOrbScript) {
+      const orb = this.arenaOrbScript as any
+      if (orb.onReveal) orb.onReveal()
+    }
+    if (this.vfxScript) {
+      const vfx = this.vfxScript as any
+      if (vfx.playReveal) vfx.playReveal()
     }
 
     // Show next-round button on host after a 3-second delay

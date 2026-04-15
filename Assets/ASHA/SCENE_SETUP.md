@@ -12,7 +12,11 @@ This guide matches **Lens Studio 5.15** + **Spectacles Sync Kit** sample layout.
 | `AshaResolver.ts` | `resolveRound`, `getVerb`, `getWinnerIndices`. |
 | `AshaAiBots.ts` | AI name/emoji lists for solo VS computer. |
 | `AshaGameManager.ts` | Session-scoped phase machine, battle log, host next round, solo vs multi gate. |
-| `AshaPlayerState.ts` | **Exactly one object in scene**; per-user state is synced through ownership/store, not by duplicating scene seats. |
+| `AshaPlayerState.ts` | Per-seat synced state. Create fixed seats (`Seat_1..Seat_N`) and each user claims one seat automatically at runtime. |
+| `AshaHandTooltip.ts` | Hover tooltip for card strengths/weaknesses. |
+| `AshaArenaOrb.ts` | Center orb emoji + pulse tween on select/reveal. |
+| `AshaScoreboardUI.ts` | Score/ready labels on player cards. |
+| `AshaVfx.ts` | Selection/reveal FX toggles. |
 | `ElementHandPanel.ts` | Five element buttons → `submitChoice`. |
 | `AshaSoloSetupPanel.ts` | **Solo only:** AI opponent count (1–5) + rounds (3/5/7/10) + confirm. |
 
@@ -25,7 +29,7 @@ Do **not** edit anything inside `.lspkg` packages.
 | Session | What happens |
 |---------|----------------|
 | **1 user** (Solo / Mocked Online with one preview) | Host enters phase **`solo_setup`**. Player must use **AshaSoloSetupPanel**: pick **number of AI opponents (1–5)** and **total rounds**, then **Confirm**. Then phase **`choosing`** (element hand). |
-| **2+ users** (multiplayer session) | Host skips setup and goes straight to **`choosing`**. **No AI.** Keep exactly **one** `AshaPlayerState` SceneObject in hierarchy. |
+| **2+ users** (multiplayer session) | Host goes to **`choosing`**. **No AI.** You must have enough seat objects (`AshaPlayerState`) for the maximum human players. |
 
 The game uses `SessionController.getInstance().getUsers().length` for this split — not the number of preview windows on one machine.
 
@@ -38,7 +42,9 @@ Create or verify this structure **inside** `ColocatedWorld > EnableOnReady`:
 ```
 EnableOnReady
 ├── AshaGameManager              ← SceneObject + script AshaGameManager.ts
-├── AshaPlayerState              ← single shared player-state object (DO NOT duplicate)
+├── Seat_1                       ← AshaPlayerState.ts
+├── Seat_2                       ← AshaPlayerState.ts
+├── Seat_3                       ← AshaPlayerState.ts (optional max seats)
 ├── AshaSoloSetupPanel           ← SceneObject + script AshaSoloSetupPanel.ts
 │   ├── SoloSetup_Root           ← assign to panelRoot (container)
 │   │   ├── Title_Text (optional Text3D)
@@ -67,10 +73,10 @@ EnableOnReady
 
 ## 4. Multiplayer seat setup (human players)
 
-- **Do not duplicate `AshaPlayerState` SceneObjects.** Duplicate seats cause exactly the repeated logs and broken score rows you reported.
-- Human seats in ASHA are **logical**, not one SceneObject per person.
-- Use one `AshaPlayerState` object + one `ElementHandPanel` object; Sync Kit ownership/session data handles per-user identity.
-- If you need visual chairs/anchors in the arena, create separate **visual seat objects** (`Seat_A`, `Seat_B`, `Seat_C`) with transforms/meshes only; do not attach `AshaPlayerState` to those.
+- Create one `AshaPlayerState` per seat (`Seat_1..Seat_N`), where `N` is max simultaneous humans.
+- Seats start **unowned**; script auto-claims one free seat per user (`tryClaimOwnership`).
+- Keep a **single** `ElementHandPanel`; it automatically submits to the locally-owned seat.
+- If users exceed seat count, round resolution will wait forever at `Waiting`.
 
 ---
 
@@ -85,7 +91,7 @@ EnableOnReady
 
 Wire **NextButton** interaction (e.g. SIK `PinchButton` / `Interactable` **trigger** or `RectangleButton` **triggerUpCallbacks**) to **AshaGameManager** → **`advanceToNextRound`**.
 
-### AshaPlayerState (single object)
+### AshaPlayerState (for each seat object)
 
 | Field | Assign |
 |--------|--------|
@@ -98,6 +104,23 @@ Wire **NextButton** interaction (e.g. SIK `PinchButton` / `Interactable` **trigg
 | `playerState` | The **`AshaPlayerState`** this hand controls (usually local seat). |
 | `buttonParent` | Parent of the five buttons (optional). |
 | `buttonObjects[0–4]` | Atar … Kshathra button roots. |
+| `arenaOrbScript` | `AshaArenaOrb` script object (optional) |
+| `vfxScript` | `AshaVfx` script object (optional) |
+| `tooltipScript` | `AshaHandTooltip` script object (optional) |
+### Optional UX scripts wiring
+
+- `AshaHandTooltip`
+  - `tooltipRoot`, `titleText`, `bodyText`
+  - On button hover enter callbacks: `hoverAtar/hoverAban/...`
+  - On hover exit callbacks: `hide`
+- `AshaArenaOrb`
+  - `orbRoot` and `orbText`
+  - Gets called from hand/game manager automatically when linked
+- `AshaVfx`
+  - `selectionFx`, `revealFx`
+- `AshaScoreboardUI`
+  - Arrays for name/score/state text objects (one slot per seat card)
+
 
 Per-button **trigger up** → `ElementHandPanel` on same object: `pickAtar`, `pickAban`, … (exact names).
 

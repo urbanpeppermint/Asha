@@ -17,6 +17,9 @@ export class ElementHandPanel extends BaseScriptComponent {
 
   // Optional: parent that groups all buttons (toggling this shows/hides all)
   @input buttonParent: SceneObject
+  @input arenaOrbScript: ScriptComponent
+  @input vfxScript: ScriptComponent
+  @input tooltipScript: ScriptComponent
 
   private readonly log = new SyncKitLogger(TAG)
   private panelEnabled = false
@@ -50,13 +53,29 @@ export class ElementHandPanel extends BaseScriptComponent {
 
   private pick(elementId: number) {
     if (!this.panelEnabled) return
-    if (!this.playerState) {
+    const seat = (this.playerState && this.playerState.isLocallyOwnedSeat)
+      ? this.playerState
+      : AshaPlayerState.getLocalOwned()
+
+    if (!seat) {
       this.log.e('playerState not assigned in Inspector')
       return
     }
 
     this.log.i(`Player picked element ${elementId}`)
-    this.playerState.submitChoice(elementId)
+    seat.submitChoice(elementId)
+    if (this.arenaOrbScript) {
+      const orb = this.arenaOrbScript as any
+      if (orb.onChoiceSelected) orb.onChoiceSelected(elementId)
+    }
+    if (this.vfxScript) {
+      const vfx = this.vfxScript as any
+      if (vfx.playSelection) vfx.playSelection(elementId)
+    }
+    if (this.tooltipScript) {
+      const tip = this.tooltipScript as any
+      if (tip.hide) tip.hide()
+    }
 
     // Disable panel after choice — re-enabled on next round by game manager
     this.setEnabled(false)

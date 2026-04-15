@@ -24,6 +24,7 @@ export class AshaPlayerState extends BaseScriptComponent {
 
   private syncEntity: SyncEntity
   private readonly log = new SyncKitLogger(TAG)
+  private static claimingInProgress = false
 
   onAwake() {
     // Register immediately so getAll() works even before SyncEntity is ready
@@ -37,7 +38,7 @@ export class AshaPlayerState extends BaseScriptComponent {
         this.readyProp,
         this.nameProp,
       ]),
-      true,     // owned: only this player can write to their own state
+      false,    // start unowned; each user claims one available seat
       'Owner'   // entity is destroyed when owner disconnects
     )
 
@@ -51,12 +52,8 @@ export class AshaPlayerState extends BaseScriptComponent {
 
   private onReady() {
     this.log.i('PlayerState ready')
-
-    if (this.syncEntity.doIOwnStore()) {
-      const name = SessionController.getInstance().getLocalUserName() ?? ''
-      this.nameProp.setPendingValue(name)
-      this.log.i(`Local player: ${name}`)
-    }
+    this.syncEntity.onOwnerUpdated.add(() => this.onOwnerChanged())
+    this.onOwnerChanged()
 
     // Remote changes drive the scoreboard and trigger all-chosen check
     this.scoreProp.onRemoteChange.add(() => this.updateDisplay())
@@ -68,6 +65,18 @@ export class AshaPlayerState extends BaseScriptComponent {
     })
 
     this.updateDisplay()
+    AshaPlayerState.tryClaimLocalSeat()
+  }
+
+  private onOwnerChanged() {
+    if (this.syncEntity.doIOwnStore()) {
+      const name = SessionController.getInstance().getLocalUserName() ?? 'Magi'
+      this.nameProp.setPendingValue(name)
+      this.log.i(`Local player: ${name}`)
+    }
+    this.updateDisplay()
+    AshaPlayerState.enforceSingleSeatOwnership()
+    AshaPlayerState.tryClaimLocalSeat()
   }
 
   // ── Public API ──────────────────────────────────────────────────────────
@@ -134,6 +143,41 @@ export class AshaPlayerState extends BaseScriptComponent {
 
   get ownerConnectionId(): string {
     return this.syncEntity?.getOwnerConnectionId?.() ?? ''
+  }
+
+  get isLocallyOwnedSeat(): boolean {
+    return this.syncEntity?.doIOwnStore?.() === true
+  }
+
+  public static getLocalOwned(): AshaPlayerState | null {
+    for (const p of AshaPlayerState.instances) {
+      if (p.isLocallyOwnedSeat) return p
+    }
+    return null
+  }
+
+  private static enforceSingleSeatOwnership() {
+    const mine = AshaPlayerState.instances.filter(i => i.syncEntity?.doIOwnStore?.() === true)
+    if (mine.length <= 1) return
+    for (let i = 1; i < mine.length; i++) {
+      mine[i].syncEntity.revokeOwnership()
+    }
+  }
+
+  private static tryClaimLocalSeat() {
+    if (AshaPlayerState.claimingInProgress) return
+    if (AshaPlayerState.getLocalOwned()) return
+
+    const freeSeat = AshaPlayerState.instances.find(
+      i => i.syncEntity?.isSetupFinished && !i.syncEntity.isStoreOwned()
+    )
+    if (!freeSeat) return
+
+    AshaPlayerState.claimingInProgress = true
+    freeSeat.syncEntity.tryClaimOwnership(
+      () => { AshaPlayerState.claimingInProgress = false },
+      () => { AshaPlayerState.claimingInProgress = false }
+    )
   }
 
   private updateDisplay() {
