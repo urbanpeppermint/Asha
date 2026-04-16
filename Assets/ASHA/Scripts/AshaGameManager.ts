@@ -3,523 +3,475 @@ import { StorageProperty } from 'SpectaclesSyncKit.lspkg/Core/StorageProperty'
 import { StoragePropertySet } from 'SpectaclesSyncKit.lspkg/Core/StoragePropertySet'
 import { SessionController } from 'SpectaclesSyncKit.lspkg/Core/SessionController'
 import { SyncKitLogger } from 'SpectaclesSyncKit.lspkg/Utils/SyncKitLogger'
-import { AshaPlayerState } from './AshaPlayerState'
 import { resolveRound, getVerb } from './AshaResolver'
 import { ELEMENTS, MATRIX } from './AshaConstants'
 import { AI_EMOJIS, AI_NAMES } from './AshaAiBots'
 
 const TAG = 'AshaGameManager'
+const MAX_SLOTS = 6
+const SOLO_WAIT_SEC = 1.0
 
-type BattleParticipant = { name: string; choice: number }
-
-function storageInt(prop: StorageProperty<number>, fallback: number): number {
-  const v = prop.currentOrPendingValue ?? prop.currentValue
-  if (v === null || v === undefined) return fallback
-  return v as number
+function sInt(p: StorageProperty<number>, fb: number): number {
+  const v = p.currentOrPendingValue ?? p.currentValue
+  return (v !== null && v !== undefined) ? (v as number) : fb
+}
+function sStr(p: StorageProperty<string>, fb: string): string {
+  const v = p.currentOrPendingValue ?? p.currentValue
+  return (v !== null && v !== undefined) ? (v as string) : fb
 }
 
-function storageString(prop: StorageProperty<string>, fallback: string): string {
-  const v = prop.currentOrPendingValue ?? prop.currentValue
-  if (v === null || v === undefined) return fallback
-  return v as string
-}
-
-type HandPanelLike = { setEnabled(enabled: boolean): void }
-type SoloPanelLike = { setVisible(visible: boolean): void }
+type PanelLike = { setEnabled(e: boolean): void }
+type SetupLike = { setVisible(v: boolean): void }
 
 @component
 export class AshaGameManager extends BaseScriptComponent {
 
-  // Inspector-assigned references
-  @input nextRoundButton: SceneObject   // disabled until host sees reveal
-  @input battleLogText: SceneObject     // Text3D for battle log display
+  @input nextRoundButton: SceneObject
+  @input battleLogText: SceneObject
   @input titleText: SceneObject
   @input roundText: SceneObject
   @input statusText: SceneObject
-  @input arenaOrbScript: ScriptComponent
-  @input vfxScript: ScriptComponent
   @input revealDelaySec: number = 1.2
 
-  // ── Shared state (unowned — any player can write) ──────────────────────
-  private phaseProp        = StorageProperty.manualString('ashaPhase', 'waiting')
-  private roundProp        = StorageProperty.manualInt('ashaRound', 1)
-  private totalRoundsProp  = StorageProperty.manualInt('ashaTotalRounds', 5)
-  /** Synced AI slots for solo (1–5). 0 = not chosen yet or multiplayer (no AI). */
-  private aiOpponentCountProp = StorageProperty.manualInt('ashaAiOpponentCount', 0)
+  // ── ONE shared SyncEntity — flat registry ─────────────────────────────
+  private phaseProp      = StorageProperty.manualString('phase', 'waiting')
+  private roundProp      = StorageProperty.manualInt('round', 1)
+  private totalRdsProp   = StorageProperty.manualInt('totalRds', 5)
+  private aiCountProp    = StorageProperty.manualInt('aiCnt', 0)
+  private humanCountProp = StorageProperty.manualInt('hCnt', 0)
+  private revealTrig     = StorageProperty.manualInt('rTrig', 0)
+  private nextTrig       = StorageProperty.manualInt('nTrig', 0)
+  private goTrig         = StorageProperty.manualInt('gTrig', 0)
 
-  // ── Event triggers (increment = fire, onRemoteChange = receive) ────────
-  // NetworkedEvent is unavailable — this increment pattern is the equivalent.
-  // Incrementing by 1 is a one-shot broadcast. Listeners check onRemoteChange.
-  private revealTrigger    = StorageProperty.manualInt('ashaRevealTrig', 0)
-  private nextRoundTrigger = StorageProperty.manualInt('ashaNextRndTrig', 0)
-  private gameOverTrigger  = StorageProperty.manualInt('ashaGameOverTrig', 0)
+  private c0 = StorageProperty.manualInt('c0', -1)
+  private c1 = StorageProperty.manualInt('c1', -1)
+  private c2 = StorageProperty.manualInt('c2', -1)
+  private c3 = StorageProperty.manualInt('c3', -1)
+  private c4 = StorageProperty.manualInt('c4', -1)
+  private c5 = StorageProperty.manualInt('c5', -1)
+  private s0 = StorageProperty.manualInt('s0', 0)
+  private s1 = StorageProperty.manualInt('s1', 0)
+  private s2 = StorageProperty.manualInt('s2', 0)
+  private s3 = StorageProperty.manualInt('s3', 0)
+  private s4 = StorageProperty.manualInt('s4', 0)
+  private s5 = StorageProperty.manualInt('s5', 0)
+  private n0 = StorageProperty.manualString('n0', '')
+  private n1 = StorageProperty.manualString('n1', '')
+  private n2 = StorageProperty.manualString('n2', '')
+  private n3 = StorageProperty.manualString('n3', '')
+  private n4 = StorageProperty.manualString('n4', '')
+  private n5 = StorageProperty.manualString('n5', '')
+
+  private get cProps(): StorageProperty<number>[] { return [this.c0,this.c1,this.c2,this.c3,this.c4,this.c5] }
+  private get sProps(): StorageProperty<number>[] { return [this.s0,this.s1,this.s2,this.s3,this.s4,this.s5] }
+  private get nProps(): StorageProperty<string>[] { return [this.n0,this.n1,this.n2,this.n3,this.n4,this.n5] }
 
   private syncEntity: SyncEntity
   private readonly log = new SyncKitLogger(TAG)
-  private isReady = false
-  private elementHandPanel: HandPanelLike | null = null
-  private soloSetupPanel: SoloPanelLike | null = null
+  private ready = false
+  private mySlot = -1
+  private lastHumanChoice = -1
+  private soloDecided = false
+  private handPanel: PanelLike | null = null
+  private setupPanel: SetupLike | null = null
 
-  /** Filled on host when resolving a round that includes AI; remotes use real players only. */
-  private lastBattleParticipants: BattleParticipant[] | null = null
-  private aiScores: number[] = []
-  private lastHumanElementChoice = -1
-  private hostBeginAttempts = 0
-  private restartRequested = false
-
+  // ── Lifecycle ─────────────────────────────────────────────────────────
   onAwake() {
-    this.syncEntity = new SyncEntity(
-      this,
-      new StoragePropertySet([
-        this.phaseProp,
-        this.roundProp,
-        this.totalRoundsProp,
-        this.aiOpponentCountProp,
-        this.revealTrigger,
-        this.nextRoundTrigger,
-        this.gameOverTrigger,
-      ]),
-      false,      // unowned: any player can write phase changes
-      'Session'   // persists while at least one player is in session
-    )
-
+    const all: StorageProperty<any>[] = [
+      this.phaseProp, this.roundProp, this.totalRdsProp,
+      this.aiCountProp, this.humanCountProp,
+      this.revealTrig, this.nextTrig, this.goTrig,
+      this.c0,this.c1,this.c2,this.c3,this.c4,this.c5,
+      this.s0,this.s1,this.s2,this.s3,this.s4,this.s5,
+      this.n0,this.n1,this.n2,this.n3,this.n4,this.n5,
+    ]
+    this.syncEntity = new SyncEntity(this, new StoragePropertySet(all), false, 'Session')
     this.syncEntity.notifyOnReady(() => this.onReady())
-
-    // Hide next-round button at start
     if (this.nextRoundButton) this.nextRoundButton.enabled = false
   }
 
-  /** Called from ElementHandPanel onAwake — avoids circular module imports. */
-  public registerElementHandPanel(panel: HandPanelLike) {
-    this.elementHandPanel = panel
-    this.syncUiToPhase(storageString(this.phaseProp, ''))
+  public registerHandPanel(p: PanelLike) {
+    this.handPanel = p
+    this.syncUi(sStr(this.phaseProp, ''))
+  }
+  public registerSoloSetupPanel(p: SetupLike) {
+    this.setupPanel = p
+    this.syncUi(sStr(this.phaseProp, ''))
   }
 
-  /** Called from AshaSoloSetupPanel onAwake. */
-  public registerSoloSetupPanel(panel: SoloPanelLike) {
-    this.soloSetupPanel = panel
-    this.syncUiToPhase(storageString(this.phaseProp, ''))
+  // ── SyncEntity ready — assign slot like Tic Tac Toe pattern ───────────
+  private onReady() {
+    this.ready = true
+    this.log.i('SyncEntity ready')
+
+    this.phaseProp.onRemoteChange.add(v => this.onPhaseChanged(v))
+    this.revealTrig.onRemoteChange.add(() => this.onReveal())
+    this.nextTrig.onRemoteChange.add(() => this.onNextRound())
+    this.goTrig.onRemoteChange.add(() => this.onGameOver())
+    for (let i = 0; i < MAX_SLOTS; i++) {
+      this.cProps[i].onRemoteChange.add(() => this.checkAllChosen())
+    }
+
+    const users = SessionController.getInstance().getUsers()
+    const userCount = users ? users.length : 1
+    this.mySlot = userCount - 1
+
+    const myName = SessionController.getInstance().getLocalUserName() ?? 'Magi'
+    this.nProps[this.mySlot].setPendingValue(myName)
+    this.log.i(`Slot ${this.mySlot} → "${myName}" (${userCount} user${userCount > 1 ? 's' : ''} in session)`)
+
+    this.setText(this.titleText, 'ASHA')
+
+    if (SessionController.getInstance().isHost()) {
+      this.humanCountProp.setPendingValue(userCount)
+
+      SessionController.getInstance().onUserJoinedSession.add(
+        (_session: any, _userInfo: any) => this.onUserJoined()
+      )
+      SessionController.getInstance().onUserLeftSession.add(
+        (_session: any, _userInfo: any) => this.onUserLeft()
+      )
+
+      const d = this.createEvent('DelayedCallbackEvent')
+      d.bind(() => this.hostDecide())
+      d.reset(SOLO_WAIT_SEC)
+    }
   }
 
-  /**
-   * Solo flow: pick AI count (1–5) and total rounds, then start `choosing`.
-   * Host only; call from AshaSoloSetupPanel confirm button.
-   */
-  public applySoloSetupAndStart(aiCount: number, totalRounds: number) {
-    if (!this.isReady) return
+  // ── Host: decide solo vs multi after waiting for all players ──────────
+  private hostDecide() {
+    if (this.soloDecided) return
+    this.soloDecided = true
+
+    const phase = sStr(this.phaseProp, 'waiting')
+    if (phase !== 'waiting') return
+
+    const humans = sInt(this.humanCountProp, 1)
+    if (humans <= 1) {
+      this.log.i('Solo session → solo_setup')
+      this.phaseProp.setPendingValue('solo_setup')
+      this.onPhaseChanged('solo_setup')
+    } else {
+      this.log.i(`${humans}-player session → choosing`)
+      this.phaseProp.setPendingValue('choosing')
+      this.onPhaseChanged('choosing')
+    }
+  }
+
+  // ── User join/leave handlers (host only) ──────────────────────────────
+  private onUserJoined() {
     if (!SessionController.getInstance().isHost()) return
-    if (storageString(this.phaseProp, '') !== 'solo_setup') return
+    const users = SessionController.getInstance().getUsers()
+    const humans = users ? users.length : 1
+    this.humanCountProp.setPendingValue(humans)
+    this.log.i(`User joined → ${humans} humans`)
 
-    const n = Math.min(5, Math.max(1, Math.floor(aiCount)))
-    const r = [3, 5, 7, 10].includes(Math.floor(totalRounds))
-      ? Math.floor(totalRounds)
-      : 5
+    const phase = sStr(this.phaseProp, 'waiting')
 
-    this.aiOpponentCountProp.setPendingValue(n)
-    this.totalRoundsProp.setPendingValue(r)
-    this.log.i(`Solo config: ${n} AI, ${r} rounds`)
+    if (phase === 'waiting') {
+      this.soloDecided = true
+      this.phaseProp.setPendingValue('choosing')
+      this.onPhaseChanged('choosing')
+    } else if (phase === 'solo_setup') {
+      for (let i = 1; i < MAX_SLOTS; i++) {
+        this.nProps[i].setPendingValue('')
+        this.cProps[i].setPendingValue(-1)
+      }
+      this.aiCountProp.setPendingValue(0)
+      this.log.i('Switching solo → multiplayer choosing')
+      this.phaseProp.setPendingValue('choosing')
+      this.onPhaseChanged('choosing')
+    }
+  }
+
+  private onUserLeft() {
+    if (!SessionController.getInstance().isHost()) return
+    const users = SessionController.getInstance().getUsers()
+    const humans = users ? users.length : 1
+    this.humanCountProp.setPendingValue(humans)
+    this.log.i(`User left → ${humans} humans`)
+  }
+
+  // ── Solo setup: called from AshaSoloSetupPanel ────────────────────────
+  public applySoloSetupAndStart(aiCount: number, totalRounds: number) {
+    if (!this.ready || !SessionController.getInstance().isHost()) return
+    if (sStr(this.phaseProp, '') !== 'solo_setup') return
+
+    const humans = sInt(this.humanCountProp, 1)
+    const ai = Math.min(5, Math.max(1, Math.floor(aiCount)))
+    const rds = [3,5,7,10].indexOf(Math.floor(totalRounds)) >= 0 ? Math.floor(totalRounds) : 5
+
+    this.aiCountProp.setPendingValue(ai)
+    this.totalRdsProp.setPendingValue(rds)
+    this.log.i(`Solo config: ${ai} AI, ${rds} rounds, humans at slots 0..${humans-1}, AI at slots ${humans}..${humans+ai-1}`)
+
+    for (let i = 0; i < ai; i++) {
+      const slot = humans + i
+      const emoji = AI_EMOJIS[i % AI_EMOJIS.length]
+      const name  = AI_NAMES[i % AI_NAMES.length]
+      this.nProps[slot].setPendingValue(`${emoji} ${name}`)
+    }
 
     this.phaseProp.setPendingValue('choosing')
     this.onPhaseChanged('choosing')
   }
 
-  private sessionHumanCount(): number {
-    const users = SessionController.getInstance().getUsers()
-    return users ? users.length : 0
+  // ── Player submits choice (called from ElementHandPanel) ──────────────
+  public submitChoice(elementId: number) {
+    if (!this.ready || this.mySlot < 0) return
+    if (sInt(this.cProps[this.mySlot], -1) !== -1) return
+
+    this.log.i(`Slot ${this.mySlot} chose element ${elementId}`)
+    this.cProps[this.mySlot].setPendingValue(elementId)
+    this.lastHumanChoice = elementId
+    this.checkAllChosen()
   }
 
-  private getAiSlotCount(): number {
-    if (this.sessionHumanCount() !== 1) return 0
-    return Math.min(5, Math.max(0, storageInt(this.aiOpponentCountProp, 0)))
-  }
+  public getMySlot(): number { return this.mySlot }
 
-  private onReady() {
-    this.isReady = true
-    this.log.i('SyncEntity ready')
+  // ── Check readiness (host only) ───────────────────────────────────────
+  private checkAllChosen() {
+    if (!this.ready || !SessionController.getInstance().isHost()) return
+    if (sStr(this.phaseProp, '') !== 'choosing') return
 
-    // Subscribe to remote changes (fires on all devices EXCEPT the writer)
-    this.phaseProp.onRemoteChange.add((v) => this.onPhaseChanged(v))
-    this.revealTrigger.onRemoteChange.add(() => this.onReveal())
-    this.nextRoundTrigger.onRemoteChange.add(() => this.onNextRound())
-    this.gameOverTrigger.onRemoteChange.add(() => this.onGameOver())
-    SessionController.getInstance().onUserJoinedSession.add(() => this.onSessionUsersChanged())
-    SessionController.getInstance().onUserLeftSession.add(() => this.onSessionUsersChanged())
+    const humans = sInt(this.humanCountProp, 1)
+    const ai = sInt(this.aiCountProp, 0)
+    const total = humans + ai
+    if (total === 0) return
 
-    if (SessionController.getInstance().isHost()) {
-      const delay = this.createEvent('DelayedCallbackEvent')
-      delay.bind(() => this.hostBeginAfterSceneRegistered())
-      delay.reset(0.1)
+    // AI fills slots humans..humans+ai-1 (NEVER overlaps with human slots)
+    for (let i = humans; i < humans + ai && i < MAX_SLOTS; i++) {
+      if (sInt(this.cProps[i], -1) === -1) {
+        this.cProps[i].setPendingValue(this.pickAi())
+      }
     }
-    this.setText(this.titleText, 'ASHA — The Mithraic Mysteries')
-  }
 
-  private onSessionUsersChanged() {
-    if (!SessionController.getInstance().isHost()) return
-    const humans = this.sessionHumanCount()
-    const phase = storageString(this.phaseProp, '')
-    if (phase === 'solo_setup' && humans > 1) {
-      this.log.i('User joined during solo setup — switching to multiplayer choosing')
-      this.aiOpponentCountProp.setPendingValue(0)
-      this.phaseProp.setPendingValue('choosing')
-      this.onPhaseChanged('choosing')
+    let readyCount = 0
+    for (let i = 0; i < total; i++) {
+      if (sInt(this.cProps[i], -1) !== -1) readyCount++
     }
-  }
 
-  /** After AshaPlayerState has registered (getAll reliable). */
-  private hostBeginAfterSceneRegistered() {
-    if (!SessionController.getInstance().isHost()) return
-
-    let humans = this.sessionHumanCount()
-    if (humans === 0 && this.hostBeginAttempts < 8) {
-      this.hostBeginAttempts++
-      const retry = this.createEvent('DelayedCallbackEvent')
-      retry.bind(() => this.hostBeginAfterSceneRegistered())
-      retry.reset(0.15)
+    if (readyCount < total) {
+      this.log.i(`Waiting: ${readyCount}/${total} ready`)
+      this.setText(this.statusText, `... Awaiting ${readyCount}/${total}`)
       return
     }
-    if (humans === 0) {
-      this.log.w('No session users after retries — assuming solo (preview)')
-      humans = 1
-    }
 
-    if (humans === 1) {
-      this.log.i('Host: solo session → solo_setup (pick AI count & rounds)')
-      this.aiOpponentCountProp.setPendingValue(0)
-      this.phaseProp.setPendingValue('solo_setup')
-      this.onPhaseChanged('solo_setup')
-    } else {
-      this.log.i(`Host: ${humans}-player session → choosing`)
-      this.aiOpponentCountProp.setPendingValue(0)
-      this.phaseProp.setPendingValue('choosing')
-      this.onPhaseChanged('choosing')
-    }
+    this.resolveAndReveal(total)
   }
 
-  private syncUiToPhase(phase: string) {
-    if (!this.isReady) return
-    if (phase === 'solo_setup') {
-      if (this.soloSetupPanel) this.soloSetupPanel.setVisible(true)
-      if (this.elementHandPanel) this.elementHandPanel.setEnabled(false)
-    } else if (phase === 'choosing') {
-      if (this.soloSetupPanel) this.soloSetupPanel.setVisible(false)
-      if (this.elementHandPanel) this.elementHandPanel.setEnabled(true)
-    } else {
-      if (this.soloSetupPanel) this.soloSetupPanel.setVisible(false)
-      if (this.elementHandPanel) this.elementHandPanel.setEnabled(false)
+  private pickAi(): number {
+    if (this.lastHumanChoice >= 0 && this.lastHumanChoice <= 4 && Math.random() < 0.3) {
+      const counters = ELEMENTS[this.lastHumanChoice].loses
+      return counters[Math.floor(Math.random() * counters.length)]
     }
+    return Math.floor(Math.random() * 5)
   }
 
-  private getDistinctPlayers(): AshaPlayerState[] {
-    const seen: Record<string, boolean> = {}
-    const out: AshaPlayerState[] = []
-    for (const p of AshaPlayerState.getAll()) {
-      const key = p.ownerConnectionId || p.displayName || `idx_${out.length}`
-      if (seen[key]) continue
-      seen[key] = true
-      out.push(p)
-    }
-    return out
-  }
-
-  private setNextButtonLabel(label: string) {
-    if (!this.nextRoundButton) return
-    const selfText = this.nextRoundButton.getComponent('Component.Text')
-    if (selfText) {
-      (selfText as any).text = label
-      return
-    }
-    const childCount = this.nextRoundButton.getChildrenCount()
-    for (let i = 0; i < childCount; i++) {
-      const c = this.nextRoundButton.getChild(i)
-      const t = c.getComponent('Component.Text')
-      if (t) {
-        ;(t as any).text = label
-        return
-      }
-    }
-  }
-
-  private setText(target: SceneObject, value: string) {
-    if (!target) return
-    const textComp = target.getComponent('Component.Text')
-    if (textComp) (textComp as any).text = value
-  }
-
-  // ── Called by AshaPlayerState.submitChoice (after local readyProp set) ──
-  public checkAllChosen() {
-    if (!this.isReady) return
-    if (!SessionController.getInstance().isHost()) return
-
-    const players = this.getDistinctPlayers()
-    if (players.length === 0) return
-
-    const humansInSession = this.sessionHumanCount()
-    if (humansInSession > 1 && players.length < humansInSession) {
-      this.log.w(
-        `ASHA: ${humansInSession} users in session but ${players.length} player states discovered. Keep exactly 1 AshaPlayerState in hierarchy.`
-      )
-    }
-
-    const aiSlots = this.getAiSlotCount()
-    const soloVsAi = humansInSession === 1 && aiSlots > 0
-
-    if (!soloVsAi) {
-      if (players.length < humansInSession) return
-      const seats = players.slice(0, humansInSession)
-      const allReady = seats.every(p => p.isReady)
-      if (!allReady) {
-        const readyCount = seats.filter(p => p.isReady).length
-        this.log.i(`Waiting: ${readyCount}/${humansInSession} ready`)
-        this.setText(this.statusText, `... Awaiting ${readyCount}/${humansInSession}`)
-        return
-      }
-    } else {
-      if (!players[0].isReady) {
-        this.log.i('Waiting: 0/1 ready')
-        this.setText(this.statusText, '... Awaiting you')
-        return
-      }
-    }
-
-    this.log.i('All players chosen — resolving round')
-
-    let participants: BattleParticipant[]
-
-    if (soloVsAi) {
-      const h = players[0]
-      const humanChoice = h.choice
-      this.lastHumanElementChoice = humanChoice
-      while (this.aiScores.length < aiSlots) this.aiScores.push(0)
-      const aiChoices: number[] = []
-      for (let i = 0; i < aiSlots; i++) {
-        aiChoices.push(this.pickAiElement())
-      }
-      participants = [
-        { name: 'Magi 1', choice: humanChoice },
-        ...aiChoices.map((choice, i) => ({
-          name: `${AI_EMOJIS[i % AI_EMOJIS.length]} ${AI_NAMES[i % AI_NAMES.length]}`,
-          choice,
-        })),
-      ]
-    } else {
-      participants = players
-        .slice(0, humansInSession)
-        .map((p, i) => ({ name: `Magi ${i + 1}`, choice: p.choice }))
-    }
-
-    this.lastBattleParticipants = participants
-    const choices = participants.map(p => p.choice)
-    const deltas = resolveRound(choices)
-
-    if (soloVsAi) {
-      players[0].applyDelta(deltas[0])
-      for (let i = 0; i < aiSlots; i++) {
-        this.aiScores[i] = (this.aiScores[i] ?? 0) + deltas[i + 1]
-      }
-    } else {
-      players.forEach((p, i) => p.applyDelta(deltas[i]))
-    }
-
+  // ── Resolution ────────────────────────────────────────────────────────
+  private resolveAndReveal(total: number) {
+    this.log.i('All chosen — resolving')
     this.phaseProp.setPendingValue('resolving')
     this.setText(this.statusText, 'Shuffling the astrolabe...')
-    this.onPhaseChanged('resolving')
+    this.syncUi('resolving')
 
-    const delaySec = Math.max(0, this.revealDelaySec)
     const delay = this.createEvent('DelayedCallbackEvent')
     delay.bind(() => {
-      const trig = storageInt(this.revealTrigger, 0)
-      this.revealTrigger.setPendingValue(trig + 1)
+      const choices: number[] = []
+      const names: string[] = []
+      for (let i = 0; i < total; i++) {
+        choices.push(sInt(this.cProps[i], 0))
+        names.push(sStr(this.nProps[i], `Magi ${i+1}`))
+      }
+
+      const deltas = resolveRound(choices)
+
+      for (let i = 0; i < total; i++) {
+        const cur = sInt(this.sProps[i], 0)
+        this.sProps[i].setPendingValue(cur + deltas[i])
+      }
+
+      this.buildBattleLog(names, choices, deltas, total)
+
+      const trig = sInt(this.revealTrig, 0)
+      this.revealTrig.setPendingValue(trig + 1)
       this.phaseProp.setPendingValue('reveal')
       this.setText(this.statusText, '')
       this.onReveal()
       this.onPhaseChanged('reveal')
     })
-    delay.reset(delaySec)
+    delay.reset(Math.max(0, this.revealDelaySec))
   }
 
-  private pickAiElement(): number {
-    const last = this.lastHumanElementChoice
-    if (last >= 0 && last <= 4 && Math.random() < 0.3) {
-      const loses = ELEMENTS[last].loses
-      return loses[Math.floor(Math.random() * loses.length)]
+  private buildBattleLog(names: string[], choices: number[], deltas: number[], total: number) {
+    const round = sInt(this.roundProp, 1)
+    const lines: string[] = [`— Round ${round} Tauroctony —`]
+
+    for (let i = 0; i < total; i++) {
+      for (let j = i + 1; j < total; j++) {
+        const ci = choices[i], cj = choices[j]
+        const r = MATRIX[ci][cj]
+        if (r === 0) {
+          lines.push(`${ELEMENTS[ci].emoji} ${names[i]} & ${names[j]}: draw`)
+        } else if (r === 1) {
+          lines.push(`${ELEMENTS[ci].emoji} ${names[i]} ${getVerb(ci, cj)} ${names[j]}`)
+        } else {
+          lines.push(`${ELEMENTS[cj].emoji} ${names[j]} ${getVerb(cj, ci)} ${names[i]}`)
+        }
+      }
     }
-    return Math.floor(Math.random() * 5)
+
+    for (let i = 0; i < total; i++) {
+      const d = deltas[i]
+      const sign = d > 0 ? '+' : ''
+      lines.push(`${names[i]}: ${sign}${d} (total ${sInt(this.sProps[i], 0)})`)
+    }
+
+    this.setText(this.battleLogText, lines.join('\n'))
   }
 
-  // ── Called by host button after reveal ─────────────────────────────────
+  // ── advanceToNextRound — wired to NextButton ──────────────────────────
   public advanceToNextRound() {
-    if (!this.isReady) return
-    if (!SessionController.getInstance().isHost()) return
+    if (!this.ready || !SessionController.getInstance().isHost()) return
 
-    if (storageString(this.phaseProp, '') === 'gameover') {
-      this.restartMatch()
-      return
-    }
+    const phase = sStr(this.phaseProp, '')
+    if (phase === 'gameover') { this.restartMatch(); return }
 
     if (this.nextRoundButton) this.nextRoundButton.enabled = false
 
-    const round = storageInt(this.roundProp, 1)
-    const next = round + 1
-    const total = storageInt(this.totalRoundsProp, 5)
+    const round = sInt(this.roundProp, 1)
+    const total = sInt(this.totalRdsProp, 5)
 
-    if (next > total) {
-      this.log.i('Final round complete — game over')
-      const goTrig = storageInt(this.gameOverTrigger, 0)
-      this.gameOverTrigger.setPendingValue(goTrig + 1)
+    if (round >= total) {
+      this.log.i('Final round → game over')
+      const t = sInt(this.goTrig, 0)
+      this.goTrig.setPendingValue(t + 1)
       this.phaseProp.setPendingValue('gameover')
-      this.onGameOver()           // ← direct call on host
+      this.onGameOver()
       this.onPhaseChanged('gameover')
     } else {
-      this.log.i(`Advancing to round ${next}`)
+      const next = round + 1
+      this.log.i(`→ Round ${next}`)
       this.roundProp.setPendingValue(next)
-      const nrTrig = storageInt(this.nextRoundTrigger, 0)
-      this.nextRoundTrigger.setPendingValue(nrTrig + 1)
+      const t = sInt(this.nextTrig, 0)
+      this.nextTrig.setPendingValue(t + 1)
       this.phaseProp.setPendingValue('choosing')
-      this.onNextRound()          // ← direct call on host
+      this.onNextRound()
       this.onPhaseChanged('choosing')
     }
   }
 
   private restartMatch() {
-    if (this.restartRequested) return
-    this.restartRequested = true
-    this.log.i('Replay requested — restarting match')
-    this.aiScores = []
-    this.lastHumanElementChoice = -1
-    this.lastBattleParticipants = null
+    this.log.i('Replay → restart')
+    const humans = sInt(this.humanCountProp, 1)
+    const ai = sInt(this.aiCountProp, 0)
+    const total = humans + ai
+    for (let i = 0; i < total; i++) {
+      this.cProps[i].setPendingValue(-1)
+      this.sProps[i].setPendingValue(0)
+    }
     this.roundProp.setPendingValue(1)
-    this.getDistinctPlayers().forEach(p => p.resetForNewMatch())
 
-    const nextPhase = this.sessionHumanCount() === 1 ? 'solo_setup' : 'choosing'
+    const nextPhase = humans <= 1 ? 'solo_setup' : 'choosing'
     this.phaseProp.setPendingValue(nextPhase)
-    this.onPhaseChanged(nextPhase)
     if (this.nextRoundButton) this.nextRoundButton.enabled = false
-    this.setNextButtonLabel('Next Round')
-    this.restartRequested = false
+    this.setBtnLabel('NEXT ROUND')
+    this.onPhaseChanged(nextPhase)
   }
 
-  // ── Phase handler (all devices) ─────────────────────────────────────────
+  // ── Phase handler ─────────────────────────────────────────────────────
   private onPhaseChanged(phase: string) {
     this.log.i(`Phase → ${phase}`)
 
-    if (phase === 'solo_setup') {
-      this.syncUiToPhase('solo_setup')
-      return
-    }
-
     if (phase === 'choosing') {
-      this.lastBattleParticipants = null
-      this.getDistinctPlayers().forEach(p => p.resetForRound())
-      const r = storageInt(this.roundProp, 1)
-      const t = storageInt(this.totalRoundsProp, 5)
+      const humans = sInt(this.humanCountProp, 1)
+      const ai = sInt(this.aiCountProp, 0)
+      const total = humans + ai
+      for (let i = 0; i < total; i++) this.cProps[i].setPendingValue(-1)
+
+      const r = sInt(this.roundProp, 1)
+      const t = sInt(this.totalRdsProp, 5)
       this.setText(this.roundText, `Round ${r} of ${t}`)
       this.setText(this.statusText, 'Choose your element')
-      this.setText(
-        this.battleLogText,
-        'Hint: Fire beats Earth/Metal, Water beats Fire/Metal, Earth beats Water/Wind, Wind beats Fire/Water, Metal beats Earth/Wind.'
-      )
-      if (this.arenaOrbScript) {
-        const orb = this.arenaOrbScript as any
-        if (orb.onRoundReset) orb.onRoundReset()
-      }
+      this.setText(this.battleLogText,
+        'Fire>Earth/Metal  Water>Fire/Metal  Earth>Water/Wind  Wind>Fire/Water  Metal>Earth/Wind')
     }
 
-    this.syncUiToPhase(phase)
+    this.syncUi(phase)
   }
 
-  // ── Reveal handler (all devices) ────────────────────────────────────────
-  private onReveal() {
-    this.log.i('Reveal fired')
+  private onReveal() { this.log.i('Reveal') }
 
-    const roster =
-      this.lastBattleParticipants && this.lastBattleParticipants.length > 0
-        ? this.lastBattleParticipants
-        : this.getDistinctPlayers().map(p => ({
-            name: p.displayName,
-            choice: p.choice,
-          }))
-
-    // Build battle log text
-    const lines: string[] = []
-    for (let i = 0; i < roster.length; i++) {
-      for (let j = i + 1; j < roster.length; j++) {
-        const ci = roster[i].choice
-        const cj = roster[j].choice
-        if (ci === -1 || cj === -1) continue
-
-        const r = MATRIX[ci][cj]
-
-        if (r === 0) {
-          lines.push(`${ELEMENTS[ci].emoji} ${roster[i].name} & ${roster[j].name}: draw`)
-        } else if (r === 1) {
-          lines.push(`${ELEMENTS[ci].emoji} ${roster[i].name} ${getVerb(ci, cj)} ${roster[j].name}`)
-        } else {
-          lines.push(`${ELEMENTS[cj].emoji} ${roster[j].name} ${getVerb(cj, ci)} ${roster[i].name}`)
-        }
-      }
-    }
-
-    // Update battle log Text3D
-    if (this.battleLogText) {
-      const textComp = this.battleLogText.getComponent('Component.Text')
-      if (textComp) (textComp as any).text = lines.join('\n')
-    }
-    if (this.arenaOrbScript) {
-      const orb = this.arenaOrbScript as any
-      if (orb.onReveal) orb.onReveal()
-    }
-    if (this.vfxScript) {
-      const vfx = this.vfxScript as any
-      if (vfx.playReveal) vfx.playReveal()
-    }
-
-    // Show next-round button on host after a 3-second delay
-    if (SessionController.getInstance().isHost()) {
-      const isFinal = storageInt(this.roundProp, 1) >= storageInt(this.totalRoundsProp, 5)
-      this.setNextButtonLabel(isFinal ? 'Replay' : 'Next Round')
-      const delay = this.createEvent('DelayedCallbackEvent')
-      delay.bind(() => {
-        if (this.nextRoundButton) this.nextRoundButton.enabled = true
-      })
-      delay.reset(3.0)
-    }
-  }
-
-  // ── Next round handler (all devices) ────────────────────────────────────
   private onNextRound() {
-    this.log.i(`Round ${storageInt(this.roundProp, 1)} starting`)
-    if (this.battleLogText) {
-      const textComp = this.battleLogText.getComponent('Component.Text')
-      if (textComp) (textComp as any).text = ''
-    }
+    this.log.i(`Round ${sInt(this.roundProp, 1)} starting`)
   }
 
-  // ── Game over handler (all devices) ─────────────────────────────────────
   private onGameOver() {
     this.log.i('Game over')
-    const humans = [...this.getDistinctPlayers()].sort((a, b) => b.score - a.score)
-    const rows: { label: string; score: number }[] = humans.map(p => ({
-      label: p.displayName,
-      score: p.score,
-    }))
-    const aiSlots = this.getAiSlotCount()
-    if (humans.length === 1 && aiSlots > 0) {
-      for (let i = 0; i < aiSlots; i++) {
-        rows.push({
-          label: `${AI_EMOJIS[i % AI_EMOJIS.length]} ${AI_NAMES[i % AI_NAMES.length]} (AI)`,
-          score: this.aiScores[i] ?? 0,
-        })
-      }
+    const humans = sInt(this.humanCountProp, 1)
+    const ai = sInt(this.aiCountProp, 0)
+    const total = humans + ai
+    const rows: { name: string; score: number }[] = []
+    for (let i = 0; i < total; i++) {
+      rows.push({
+        name: sStr(this.nProps[i], `Magi ${i+1}`),
+        score: sInt(this.sProps[i], 0),
+      })
     }
     rows.sort((a, b) => b.score - a.score)
-    const medals = ['WINNER', '2nd', '3rd']
-    rows.forEach((r, i) => {
-      this.log.i(`${medals[i] ?? ''} ${r.label}: ${r.score} pts`)
-    })
+
+    const medals = ['WINNER', '2nd', '3rd', '4th', '5th', '6th']
+    const lines = rows.map((r, i) => `${medals[i] ?? ''} ${r.name}: ${r.score} pts`)
+    this.setText(this.battleLogText, lines.join('\n'))
     this.setText(this.statusText, 'Game over')
+    this.setBtnLabel('PLAY AGAIN')
+
     if (SessionController.getInstance().isHost()) {
-      this.setNextButtonLabel('Replay')
       if (this.nextRoundButton) this.nextRoundButton.enabled = true
     }
   }
+
+  // ── UI sync ───────────────────────────────────────────────────────────
+  private syncUi(phase: string) {
+    if (!this.ready) return
+    const isSolo   = phase === 'solo_setup'
+    const isChoose = phase === 'choosing'
+
+    if (this.setupPanel) this.setupPanel.setVisible(isSolo)
+    if (this.handPanel) this.handPanel.setEnabled(isChoose)
+
+    if (phase === 'reveal' && SessionController.getInstance().isHost()) {
+      const isFinal = sInt(this.roundProp, 1) >= sInt(this.totalRdsProp, 5)
+      this.setBtnLabel(isFinal ? 'PLAY AGAIN' : 'NEXT ROUND')
+      const d = this.createEvent('DelayedCallbackEvent')
+      d.bind(() => { if (this.nextRoundButton) this.nextRoundButton.enabled = true })
+      d.reset(3.0)
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────
+  private setText(obj: SceneObject, val: string) {
+    if (!obj) return
+    const t = obj.getComponent('Component.Text')
+    if (t) (t as any).text = val
+  }
+
+  private setBtnLabel(label: string) {
+    if (!this.nextRoundButton) return
+    const self = this.nextRoundButton.getComponent('Component.Text')
+    if (self) { (self as any).text = label; return }
+    const cc = this.nextRoundButton.getChildrenCount()
+    for (let i = 0; i < cc; i++) {
+      const t = this.nextRoundButton.getChild(i).getComponent('Component.Text')
+      if (t) { (t as any).text = label; return }
+    }
+  }
+
+  // ── Public getters for scoreboard UI ──────────────────────────────────
+  public getSlotCount(): number {
+    return sInt(this.humanCountProp, 0) + sInt(this.aiCountProp, 0)
+  }
+  public getSlotName(i: number): string { return i < MAX_SLOTS ? sStr(this.nProps[i], '') : '' }
+  public getSlotScore(i: number): number { return i < MAX_SLOTS ? sInt(this.sProps[i], 0) : 0 }
+  public getSlotChoice(i: number): number { return i < MAX_SLOTS ? sInt(this.cProps[i], -1) : -1 }
 }

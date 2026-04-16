@@ -1,163 +1,168 @@
-# ASHA — Scripts, scene hierarchy, and setup (Spectacles Sync Kit)
+# ASHA — Lens Studio Scene Setup (Final, Simplified)
 
-This guide matches **Lens Studio 5.15** + **Spectacles Sync Kit** sample layout. ASHA lives **only** under `ColocatedWorld > EnableOnReady` (Rule 2).
+## Architecture
 
----
+ONE shared `SyncEntity` lives on the `AshaGameManager` object.
+It holds ALL game state: phase, round, humanCount, aiCount, and a flat
+array of 6 player slots (choice, score, name per slot). No per-player
+SyncEntities. Follows the Tic Tac Toe sample pattern.
 
-## 1. Scripts you must have (`Assets/ASHA/Scripts/`)
+- **Slot assignment:** Each device gets `mySlot = getUsers().length - 1`
+  at `onReady` time (same as Tic Tac Toe's player assignment).
+- **Solo:** Host = slot 0. AI fills slots 1..N (after human slots).
+- **Multiplayer:** Host = slot 0, second player = slot 1, etc.
+  AI slots NEVER overlap with human slots.
 
-| Script | Role |
-|--------|------|
-| `AshaConstants.ts` | Element table + `MATRIX` (do not edit per design lock). |
-| `AshaResolver.ts` | `resolveRound`, `getVerb`, `getWinnerIndices`. |
-| `AshaAiBots.ts` | AI name/emoji lists for solo VS computer. |
-| `AshaGameManager.ts` | Session-scoped phase machine, battle log, host next round, solo vs multi gate. |
-| `AshaPlayerState.ts` | Per-seat synced state. Create fixed seats (`Seat_1..Seat_N`) and each user claims one seat automatically at runtime. |
-| `AshaHandTooltip.ts` | Hover tooltip for card strengths/weaknesses. |
-| `AshaArenaOrb.ts` | Center orb emoji + pulse tween on select/reveal. |
-| `AshaScoreboardUI.ts` | Score/ready labels on player cards. |
-| `AshaVfx.ts` | Selection/reveal FX toggles. |
-| `ElementHandPanel.ts` | Five element buttons → `submitChoice`. |
-| `AshaSoloSetupPanel.ts` | **Solo only:** AI opponent count (1–5) + rounds (3/5/7/10) + confirm. |
-
-Do **not** edit anything inside `.lspkg` packages.
+You only need **1 ElementHandPanel** and **1 AshaGameManager** in the scene.
+No `AshaPlayerState` objects — that file is deleted.
 
 ---
 
-## 2. Modes (how the lens decides)
-
-| Session | What happens |
-|---------|----------------|
-| **1 user** (Solo / Mocked Online with one preview) | Host enters phase **`solo_setup`**. Player must use **AshaSoloSetupPanel**: pick **number of AI opponents (1–5)** and **total rounds**, then **Confirm**. Then phase **`choosing`** (element hand). |
-| **2+ users** (multiplayer session) | Host goes to **`choosing`**. **No AI.** You must have enough seat objects (`AshaPlayerState`) for the maximum human players. |
-
-The game uses `SessionController.getInstance().getUsers().length` for this split — not the number of preview windows on one machine.
-
----
-
-## 3. Hierarchy (under `EnableOnReady` only)
-
-Create or verify this structure **inside** `ColocatedWorld > EnableOnReady`:
+## Scene Hierarchy
 
 ```
-EnableOnReady
-├── AshaGameManager              ← SceneObject + script AshaGameManager.ts
-├── Seat_1                       ← AshaPlayerState.ts
-├── Seat_2                       ← AshaPlayerState.ts
-├── Seat_3                       ← AshaPlayerState.ts (optional max seats)
-├── AshaSoloSetupPanel           ← SceneObject + script AshaSoloSetupPanel.ts
-│   ├── SoloSetup_Root           ← assign to panelRoot (container)
-│   │   ├── Title_Text (optional Text3D)
-│   │   ├── Label_AI (optional)
-│   │   ├── AiCount_1 … AiCount_5   ← buttons → pickAi1 … pickAi5
-│   │   ├── Label_Rounds (optional)
-│   │   ├── Rounds_3,5,7,10         ← buttons → pickRounds3 … pickRounds10
-│   │   └── ConfirmButton           → confirmAndStart
-├── ElementHandPanel             ← script ElementHandPanel.ts
-│   └── buttonObjects (parent)
-│       ├── AtarBtn   → pickAtar
-│       ├── AbanBtn   → pickAban
-│       ├── ZamBtn    → pickZam
-│       ├── VayuBtn   → pickVayu
-│       └── KshathraBtn → pickKhshathra
-├── NextButton                   ← host “next round” (starts disabled)
-├── BattleLogText                ← Text component for log
-├── AshaOrb                      ← optional visuals
-└── AshaScoreboard               ← optional; wire later to AshaPlayerState
+ColocatedWorld
+└── EnableOnReady
+    ├── ASHA_GameManager         ← AshaGameManager.ts script component
+    │                               + SyncEntity auto-created by script (no manual SyncEntity needed)
+    ├── ASHA_HandPanel           ← ElementHandPanel.ts script component
+    │   ├── AtarBtn              ← PinchButton  (triggerUpCallbacks → ElementHandPanel.pickAtar)
+    │   ├── AbanBtn              ← PinchButton  (triggerUpCallbacks → ElementHandPanel.pickAban)
+    │   ├── ZamBtn               ← PinchButton  (triggerUpCallbacks → ElementHandPanel.pickZam)
+    │   ├── VayuBtn              ← PinchButton  (triggerUpCallbacks → ElementHandPanel.pickVayu)
+    │   └── KshathraBtn          ← PinchButton  (triggerUpCallbacks → ElementHandPanel.pickKhshathra)
+    │
+    ├── ASHA_SoloSetup           ← AshaSoloSetupPanel.ts script component
+    │   ├── Ai1Btn..Ai5Btn       ← PinchButton  (triggerUp → pickAi1..pickAi5)
+    │   ├── Rds3Btn..Rds10Btn    ← PinchButton  (triggerUp → pickRounds3..pickRounds10)
+    │   └── BeginBtn             ← PinchButton  (triggerUp → confirmAndStart)
+    │
+    ├── ASHA_UI
+    │   ├── TitleLabel           ← Text component (shows "ASHA")
+    │   ├── RoundLabel           ← Text component (shows "Round X of Y")
+    │   ├── StatusLabel          ← Text component (shows hints/awaiting)
+    │   ├── BattleLogLabel       ← Text component (battle log / final standings)
+    │   └── NextRoundBtn         ← PinchButton
+    │       └── ButtonLabel      ← Text component child (shows "NEXT ROUND" / "PLAY AGAIN")
+    │
+    ├── ASHA_Scoreboard          ← (Optional) AshaScoreboardUI.ts
+    │   ├── Slot0_Name           ← Text
+    │   ├── Slot0_Score          ← Text
+    │   ├── Slot0_State          ← Text
+    │   ├── Slot1_Name / Score / State
+    │   └── Slot2_Name / Score / State  (up to 6 slots)
+    │
+    ├── ASHA_Tooltip             ← (Optional) AshaHandTooltip.ts
+    ├── ASHA_ArenaOrb            ← (Optional) AshaArenaOrb.ts
+    └── ASHA_VFX                 ← (Optional) AshaVfx.ts
 ```
 
-**Start Menu (Sync Kit prefab — one inspector change):**  
-`SpectaclesSyncKit > … > StartMenu > SoloButton` → `singlePlayerType` = **Mocked Online (Automatic)**.
+---
+
+## Inspector Wiring
+
+### AshaGameManager (on `ASHA_GameManager`)
+
+| Field             | Drag from scene                |
+|-------------------|--------------------------------|
+| nextRoundButton   | → ASHA_UI / NextRoundBtn       |
+| battleLogText     | → ASHA_UI / BattleLogLabel     |
+| titleText         | → ASHA_UI / TitleLabel         |
+| roundText         | → ASHA_UI / RoundLabel         |
+| statusText        | → ASHA_UI / StatusLabel        |
+| revealDelaySec    | 1.2 (default)                  |
+
+**No SyncEntity component needs to be added manually** — the script creates
+its own SyncEntity in code with `new SyncEntity(this, ...)`.
+
+### ElementHandPanel (on `ASHA_HandPanel`)
+
+| Field             | Drag from scene                |
+|-------------------|--------------------------------|
+| gameManager       | → ASHA_GameManager             |
+| buttonObjects     | → [AtarBtn, AbanBtn, ZamBtn, VayuBtn, KshathraBtn] |
+| buttonParent      | → ASHA_HandPanel (itself)      |
+| arenaOrbScript    | → (optional) ASHA_ArenaOrb's script component |
+| vfxScript         | → (optional) ASHA_VFX's script component |
+| tooltipScript     | → (optional) ASHA_Tooltip's script component |
+
+### AshaSoloSetupPanel (on `ASHA_SoloSetup`)
+
+| Field         | Drag from scene            |
+|---------------|----------------------------|
+| gameManager   | → ASHA_GameManager         |
+| panelRoot     | → ASHA_SoloSetup (itself)  |
+
+### AshaScoreboardUI (on `ASHA_Scoreboard`)
+
+| Field         | Drag from scene                     |
+|---------------|-------------------------------------|
+| gameManager   | → ASHA_GameManager                  |
+| nameTexts     | → [Slot0_Name, Slot1_Name, ...]     |
+| scoreTexts    | → [Slot0_Score, Slot1_Score, ...]    |
+| stateTexts    | → [Slot0_State, Slot1_State, ...]    |
+
+### NextRoundBtn
+
+Wire `triggerUpCallbacks`:
+- **Target:** ASHA_GameManager object
+- **Function:** `advanceToNextRound`
 
 ---
 
-## 4. Multiplayer seat setup (human players)
+## Game Flow (matches HTML preview)
 
-- Create one `AshaPlayerState` per seat (`Seat_1..Seat_N`), where `N` is max simultaneous humans.
-- Seats start **unowned**; script auto-claims one free seat per user (`tryClaimOwnership`).
-- Keep a **single** `ElementHandPanel`; it automatically submits to the locally-owned seat.
-- If users exceed seat count, round resolution will wait forever at `Waiting`.
+### Solo (1 preview window)
+1. StartMenu → Solo → session connects → EnableOnReady activates
+2. Host gets slot 0 (from `getUsers().length - 1 = 0`)
+3. Host waits 1.0s. No other users arrive → `solo_setup` phase
+4. SoloSetupPanel appears. Player picks AI count + rounds, taps Begin
+5. AI fills slots 1..N (after human slot 0). Phase → `choosing`
+6. Player picks an element → AI auto-picks → all chosen
+7. → `resolving` (1.2s delay), then `reveal` with battle log
+8. Tap Next → next round or game over
+9. Tap Play Again → back to `solo_setup`
 
----
+### Multiplayer (2+ preview windows)
+1. StartMenu → Multiplayer → both connect to same session
+2. Preview 1 (host) gets slot 0. Phase stays `waiting`
+3. Preview 2 connects → `onUserJoinedSession` fires on host
+4. Host updates humanCount to 2, skips solo, phase → `choosing`
+5. Preview 2 gets slot 1 (from `getUsers().length - 1 = 1`)
+6. Both see ElementHandPanel, each picks an element
+7. Host checks all human slots chosen → resolve → reveal → next round
+8. No AI involved in pure multiplayer (aiCount = 0)
 
-## 5. Inspector wiring checklist
-
-### AshaGameManager
-
-| Field | Assign |
-|--------|--------|
-| `nextRoundButton` | `EnableOnReady > NextButton` |
-| `battleLogText` | `EnableOnReady > BattleLogText` |
-
-Wire **NextButton** interaction (e.g. SIK `PinchButton` / `Interactable` **trigger** or `RectangleButton` **triggerUpCallbacks**) to **AshaGameManager** → **`advanceToNextRound`**.
-
-### AshaPlayerState (for each seat object)
-
-| Field | Assign |
-|--------|--------|
-| `gameManager` | `EnableOnReady > AshaGameManager` |
-
-### ElementHandPanel
-
-| Field | Assign |
-|--------|--------|
-| `playerState` | The **`AshaPlayerState`** this hand controls (usually local seat). |
-| `buttonParent` | Parent of the five buttons (optional). |
-| `buttonObjects[0–4]` | Atar … Kshathra button roots. |
-| `arenaOrbScript` | `AshaArenaOrb` script object (optional) |
-| `vfxScript` | `AshaVfx` script object (optional) |
-| `tooltipScript` | `AshaHandTooltip` script object (optional) |
-### Optional UX scripts wiring
-
-- `AshaHandTooltip`
-  - `tooltipRoot`, `titleText`, `bodyText`
-  - On button hover enter callbacks: `hoverAtar/hoverAban/...`
-  - On hover exit callbacks: `hide`
-- `AshaArenaOrb`
-  - `orbRoot` and `orbText`
-  - Gets called from hand/game manager automatically when linked
-- `AshaVfx`
-  - `selectionFx`, `revealFx`
-- `AshaScoreboardUI`
-  - Arrays for name/score/state text objects (one slot per seat card)
-
-
-Per-button **trigger up** → `ElementHandPanel` on same object: `pickAtar`, `pickAban`, … (exact names).
-
-### AshaSoloSetupPanel
-
-| Field | Assign |
-|--------|--------|
-| `gameManager` | `EnableOnReady > AshaGameManager` |
-| `panelRoot` | `SoloSetup_Root` (whole panel; script hides/shows this). |
-
-Wire **AI count** buttons to `pickAi1` … `pickAi5`. Wire **round** buttons to `pickRounds3`, `pickRounds5`, `pickRounds7`, `pickRounds10`. Wire **Confirm** to **`confirmAndStart`**.
-
-**Flow reminder:** Tap an AI count (1–5), choose rounds (defaults to 5 until you tap another), then **Confirm**. If you confirm without selecting AI count, the panel logs an error.
+### Late joiner during solo_setup
+If Preview 2 connects while host is in `solo_setup`:
+- Host clears any AI names already written
+- Host sets aiCount = 0, switches to `choosing` (multiplayer)
 
 ---
 
-## 6. Phases (for debugging)
+## Key Differences from Old Setup
 
-| Phase | Meaning |
-|-------|---------|
-| `waiting` | Initial storage default before host starts. |
-| `solo_setup` | Solo session — show **AshaSoloSetupPanel**, hide element hand. |
-| `choosing` | Players pick elements; hand visible. |
-| `reveal` | Battle log filled; host gets Next after delay. |
-| `gameover` | Final scores logged. |
-
----
-
-## 7. Verification order
-
-1. **TypeScript:** zero errors (Window → Utilities → TypeScript Status).  
-2. **Solo:** Start session → **setup panel** → pick AI + rounds → confirm → **five cards** → pick → log + next round.  
-3. **Multi:** Two+ users, single `AshaPlayerState` object in hierarchy → all pick → reveal → next round.
+| Old (broken)                    | New (working)                      |
+|---------------------------------|------------------------------------|
+| N AshaPlayerState objects       | ZERO AshaPlayerState — deleted     |
+| Per-player SyncEntities         | ONE SyncEntity on GameManager      |
+| Seat ownership / claiming       | Flat slot index (host=0, join=1+)  |
+| ElementHandPanel → PlayerState  | ElementHandPanel → GameManager     |
+| ScoreboardUI → PlayerState      | ScoreboardUI → GameManager         |
 
 ---
 
-## 8. Reference
+## Files
 
-- [Spectacles Sync Kit overview](https://developers.snap.com/spectacles/spectacles-frameworks/spectacles-sync-kit/overview)  
-- Sample repo: `Spectacles-Sample` → `Spectacles Sync Kit`
+| File                    | Purpose                         |
+|-------------------------|---------------------------------|
+| AshaConstants.ts        | Element data + MATRIX           |
+| AshaResolver.ts         | Pure resolution logic           |
+| AshaAiBots.ts           | AI name/emoji lists             |
+| AshaGameManager.ts      | ALL game state + sync + phases  |
+| ElementHandPanel.ts     | 5-button hand → calls manager   |
+| AshaSoloSetupPanel.ts   | Solo config UI                  |
+| AshaScoreboardUI.ts     | Per-slot name/score display     |
+| AshaHandTooltip.ts      | Element info on hover           |
+| AshaArenaOrb.ts         | Center orb visual               |
+| AshaVfx.ts              | Selection/reveal VFX            |

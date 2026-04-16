@@ -1,21 +1,14 @@
 import { SyncKitLogger } from 'SpectaclesSyncKit.lspkg/Utils/SyncKitLogger'
-import { AshaPlayerState } from './AshaPlayerState'
+import { AshaGameManager } from './AshaGameManager'
 
 const TAG = 'ElementHandPanel'
-
-// Element index mapping must match AshaConstants.ts order:
-// 0=ATAR(Fire) 1=ABAN(Water) 2=ZAM(Earth) 3=VAYU(Wind) 4=KHSHATHRA(Metal)
 
 @component
 export class ElementHandPanel extends BaseScriptComponent {
 
-  @input playerState: AshaPlayerState
+  @input gameManager: AshaGameManager
 
-  // Assign 5 button root SceneObjects in Inspector, index 0–4
-  // Order: AtarBtn, AbanBtn, ZamBtn, VayuBtn, KshathraBtn
   @input('SceneObject[]') buttonObjects: SceneObject[] = []
-
-  // Optional: parent that groups all buttons (toggling this shows/hides all)
   @input buttonParent: SceneObject
   @input arenaOrbScript: ScriptComponent
   @input vfxScript: ScriptComponent
@@ -25,17 +18,11 @@ export class ElementHandPanel extends BaseScriptComponent {
   private panelEnabled = false
 
   onAwake() {
-    this.setEnabled(false)   // hidden until 'choosing' phase
-    const gm = this.playerState?.gameManager
-    if (gm) gm.registerElementHandPanel(this)
-    this.createEvent('OnStartEvent').bind(() => this.onStart())
-  }
-
-  private onStart() {
+    this.setEnabled(false)
+    if (this.gameManager) this.gameManager.registerHandPanel(this)
     this.log.i('ElementHandPanel ready')
   }
 
-  // ── Called by AshaGameManager when phase = 'choosing' ───────────────────
   public setEnabled(enabled: boolean) {
     this.panelEnabled = enabled
     if (this.buttonParent) this.buttonParent.enabled = enabled
@@ -43,41 +30,36 @@ export class ElementHandPanel extends BaseScriptComponent {
     this.log.i(`Panel ${enabled ? 'shown' : 'hidden'}`)
   }
 
-  // ── Pick methods — wired to each button's triggerUpCallbacks ────────────
-  // Wire in Inspector: Target = ElementHandPanel object, Function = "pickAtar" etc.
-  public pickAtar()       { this.pick(0) }
-  public pickAban()       { this.pick(1) }
-  public pickZam()        { this.pick(2) }
-  public pickVayu()       { this.pick(3) }
-  public pickKhshathra()  { this.pick(4) }
+  public pickAtar()      { this.pick(0) }
+  public pickAban()      { this.pick(1) }
+  public pickZam()       { this.pick(2) }
+  public pickVayu()      { this.pick(3) }
+  public pickKhshathra() { this.pick(4) }
+
+  // Tooltip hover — wire each button's hoverStart to these
+  public hoverAtar()      { this.showTip(0) }
+  public hoverAban()      { this.showTip(1) }
+  public hoverZam()       { this.showTip(2) }
+  public hoverVayu()      { this.showTip(3) }
+  public hoverKhshathra() { this.showTip(4) }
+  public hoverEnd()       { if (this.tooltipScript) (this.tooltipScript as any).hide?.() }
 
   private pick(elementId: number) {
     if (!this.panelEnabled) return
-    const seat = (this.playerState && this.playerState.isLocallyOwnedSeat)
-      ? this.playerState
-      : AshaPlayerState.getLocalOwned()
+    if (!this.gameManager) { this.log.e('gameManager not assigned'); return }
 
-    if (!seat) {
-      this.log.e('playerState not assigned in Inspector')
-      return
-    }
+    this.log.i(`Picked element ${elementId}`)
+    this.gameManager.submitChoice(elementId)
 
-    this.log.i(`Player picked element ${elementId}`)
-    seat.submitChoice(elementId)
-    if (this.arenaOrbScript) {
-      const orb = this.arenaOrbScript as any
-      if (orb.onChoiceSelected) orb.onChoiceSelected(elementId)
-    }
-    if (this.vfxScript) {
-      const vfx = this.vfxScript as any
-      if (vfx.playSelection) vfx.playSelection(elementId)
-    }
-    if (this.tooltipScript) {
-      const tip = this.tooltipScript as any
-      if (tip.hide) tip.hide()
-    }
+    if (this.arenaOrbScript) (this.arenaOrbScript as any).onChoiceSelected?.(elementId)
+    if (this.vfxScript) (this.vfxScript as any).playSelection?.(elementId)
+    if (this.tooltipScript) (this.tooltipScript as any).hide?.()
 
-    // Disable panel after choice — re-enabled on next round by game manager
     this.setEnabled(false)
+  }
+
+  private showTip(elementId: number) {
+    if (!this.panelEnabled || !this.tooltipScript) return
+    ;(this.tooltipScript as any).showForElement?.(elementId)
   }
 }
