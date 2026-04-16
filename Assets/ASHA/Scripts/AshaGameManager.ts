@@ -122,19 +122,31 @@ export class AshaGameManager extends BaseScriptComponent {
 
     this.setText(this.titleText, 'ASHA')
 
-    if (SessionController.getInstance().isHost()) {
+    const sc = SessionController.getInstance()
+
+    if (sc.isHost()) {
       this.humanCountProp.setPendingValue(userCount)
 
-      SessionController.getInstance().onUserJoinedSession.add(
+      sc.onUserJoinedSession.add(
         (_session: any, _userInfo: any) => this.onUserJoined()
       )
-      SessionController.getInstance().onUserLeftSession.add(
+      sc.onUserLeftSession.add(
         (_session: any, _userInfo: any) => this.onUserLeft()
       )
 
-      const d = this.createEvent('DelayedCallbackEvent')
-      d.bind(() => this.hostDecide())
-      d.reset(SOLO_WAIT_SEC)
+      if (sc.isSingleplayer()) {
+        this.hostDecide()
+      } else {
+        const d = this.createEvent('DelayedCallbackEvent')
+        d.bind(() => this.hostDecide())
+        d.reset(SOLO_WAIT_SEC)
+      }
+    } else {
+      const currentPhase = sStr(this.phaseProp, '')
+      if (currentPhase && currentPhase !== 'waiting') {
+        this.log.i(`Late join — phase already "${currentPhase}"`)
+        this.onPhaseChanged(currentPhase)
+      }
     }
   }
 
@@ -382,6 +394,12 @@ export class AshaGameManager extends BaseScriptComponent {
   // ── Phase handler ─────────────────────────────────────────────────────
   private onPhaseChanged(phase: string) {
     this.log.i(`Phase → ${phase}`)
+
+    if (phase === 'solo_setup') {
+      this.setText(this.statusText, 'Solo Setup')
+      this.setText(this.battleLogText,
+        'Pick number of AI opponents (1-5) and rounds, then tap Begin')
+    }
 
     if (phase === 'choosing') {
       const humans = sInt(this.humanCountProp, 1)
