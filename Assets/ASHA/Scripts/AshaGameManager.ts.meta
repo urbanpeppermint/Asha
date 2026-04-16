@@ -28,6 +28,7 @@
   ScriptInputsHidden:
     battleLogText: false
     nextRoundButton: false
+    revealDelaySec: false
     roundText: false
     statusText: false
     titleText: false
@@ -45,6 +46,7 @@
       titleText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       roundText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       statusText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      revealDelaySec: 1.200000
   ScriptTypes:
     -
       {}
@@ -54,3 +56,4 @@
     - // @input SceneObject titleText
     - // @input SceneObject roundText
     - // @input SceneObject statusText
+    - // @input float revealDelaySec = 1.2

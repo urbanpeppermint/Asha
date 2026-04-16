@@ -1,20 +1,20 @@
-- !<AssetImportMetadata/aacf1573-abce-4e16-bd07-e1c97d245a86>
+- !<AssetImportMetadata/7174eddb-cf38-4207-943c-5dfa5941790c>
   ImportedAssetIds:
-    TypeScriptAsset: !<reference> 3efc5d4f-5a90-4094-9480-b35e4c33d5d1
+    TypeScriptAsset: !<reference> 7d368ece-7526-4edb-af8d-bbc45d4c486e
   ImporterName: TypeScriptAssetImporter
-  PrimaryAsset: !<reference> 3efc5d4f-5a90-4094-9480-b35e4c33d5d1
+  PrimaryAsset: !<reference> 7d368ece-7526-4edb-af8d-bbc45d4c486e
   PackageType: NotAPackage
   LegacyPackagePolicy: ~
   ExtraData:
     {}
   AssetDataMap:
-    TypeScriptAsset: !<own> e0a0065a-38a2-48ed-886b-13e6c6d825bc
+    TypeScriptAsset: !<own> 495ea832-3775-4f62-ae83-5a0d870dd04a
   DependentFiles:
     []
   ImporterSettings: !<AssetImporterSettings>
     {}
   CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
-- !<TypeScriptAssetData/e0a0065a-38a2-48ed-886b-13e6c6d825bc>
+- !<TypeScriptAssetData/495ea832-3775-4f62-ae83-5a0d870dd04a>
   SvgIcon: ""
   SetupScript:
     code: ""
@@ -22,11 +22,12 @@
   VersionMajor: 0
   VersionMinor: 0
   VersionPatch: 0
-  ComponentUid: 4bb09cc1-4319-46a3-8f52-ddfb96b8e484
+  ComponentUid: 132bc3e3-f3ff-4478-af07-cb47295b2284
   ExportUid: 00000000-0000-0000-0000-000000000000
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
-    gameManager: false
+    revealFx: false
+    selectionFx: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -36,9 +37,11 @@
   Attachments:
     []
   DefaultScriptInputs:
-    - gameManager: !<MappingBased.AssignableType> 00000000-0000-0000-0000-000000000000
+    - selectionFx: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      revealFx: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
     -
       {}
   InputLines:
-    - // @input AssignableType gameManager
+    - // @input SceneObject selectionFx
+    - // @input SceneObject revealFx

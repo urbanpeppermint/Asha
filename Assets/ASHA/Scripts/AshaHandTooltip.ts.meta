@@ -1,0 +1,50 @@
+- !<AssetImportMetadata/1268f9df-7910-49e8-8dee-8784b9687741>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> ebc5042b-10b4-4318-bf00-182836c36580
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> ebc5042b-10b4-4318-bf00-182836c36580
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 3329f536-da1f-45b3-bdff-f94ac11a9e86
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/3329f536-da1f-45b3-bdff-f94ac11a9e86>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: c547f0bf-1fde-4c16-9ba7-e8b1c46309b2
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    bodyText: false
+    titleText: false
+    tooltipRoot: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - tooltipRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      titleText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      bodyText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input SceneObject tooltipRoot
+    - // @input SceneObject titleText
+    - // @input SceneObject bodyText

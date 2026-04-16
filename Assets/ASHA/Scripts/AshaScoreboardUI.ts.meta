@@ -1,0 +1,56 @@
+- !<AssetImportMetadata/bd62b6fe-7b79-46c7-af87-2f2720a62fa2>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> 0f48cadb-44de-4a33-9f86-329bd20d9a2f
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> 0f48cadb-44de-4a33-9f86-329bd20d9a2f
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 7b98b01b-60ab-40e3-bb13-79cd3ba639e6
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/7b98b01b-60ab-40e3-bb13-79cd3ba639e6>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 28495957-dfd0-447e-98ec-a7e21ba0e340
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    gameManager: false
+    nameTexts: false
+    scoreTexts: false
+    stateTexts: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - gameManager: !<MappingBased.AssignableType> 00000000-0000-0000-0000-000000000000
+      nameTexts: !<reference.SceneObject[]>
+        []
+      scoreTexts: !<reference.SceneObject[]>
+        []
+      stateTexts: !<reference.SceneObject[]>
+        []
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input AssignableType gameManager
+    - "// @input SceneObject[] nameTexts = {}"
+    - "// @input SceneObject[] scoreTexts = {}"
+    - "// @input SceneObject[] stateTexts = {}"

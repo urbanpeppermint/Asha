@@ -1,0 +1,47 @@
+- !<AssetImportMetadata/72f8799d-4b19-456b-8603-67df0aca8db0>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> f82f87cc-7b9e-4058-9c79-1054a49f678e
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> f82f87cc-7b9e-4058-9c79-1054a49f678e
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 80666b48-1446-409e-883f-3e71396bf2bb
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/80666b48-1446-409e-883f-3e71396bf2bb>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: c68b56c4-4cf7-4577-bc24-1a52a03bf682
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    orbRoot: false
+    orbText: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - orbText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      orbRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input SceneObject orbText
+    - // @input SceneObject orbRoot

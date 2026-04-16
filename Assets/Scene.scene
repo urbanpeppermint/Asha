@@ -1749,21 +1749,6 @@
     - !<own> a04f7725-919e-4acc-953e-0f0dc0820834
   Components:
     []
-- !<SceneObject/246ffb37-2216-403a-8d68-7ce79e33cfb6>
-  PrefabRemaps:
-    []
-  Name: AshaPlayerState
-  Enabled: true
-  Layers: 1
-  LocalTransform: !<TransformEntity>
-    Position: {x: -5.000000, y: 0.000000, z: -10.000000}
-    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
-    HasSegmentScaleCompensation: false
-  Children:
-    []
-  Components:
-    - !<own> eebdd45f-c87d-45d9-9fd5-5b5f3a9e5e52
 - !<RenderMeshVisual/25fe7009-3fab-4c5a-8d0b-38c4fcdc66bf>
   PrefabRemaps:
     []
@@ -1969,7 +1954,7 @@
   Enabled: true
   Layers: 1
   LocalTransform: !<TransformEntity>
-    Position: {x: 0.000000, y: 4.000000, z: 0.000000}
+    Position: {x: 0.000000, y: 7.000000, z: 0.000000}
     Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
     Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
     HasSegmentScaleCompensation: false
@@ -2217,6 +2202,21 @@
   ScriptTypes:
     "":
       {}
+- !<SceneObject/3972f027-a296-4bda-84ed-2d552be7251c>
+  PrefabRemaps:
+    []
+  Name: AshaHandTooltip
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> bfe60552-ab55-4940-8d9f-af3312c8114b
 - !<Canvas/397777ad-3f62-4b32-ae38-14bc9a523e4e>
   PrefabRemaps:
     []
@@ -3092,7 +3092,7 @@
   ScriptInputs:
     "":
       _renderOrder: 0
-      _size: !<Vec3> {x: 15.000000, y: 4.500000, z: 1.000000}
+      _size: !<Vec3> {x: 7.000000, y: 3.000000, z: 1.000000}
       _inactive: false
       _playAudio: true
       _style: PrimaryNeutral
@@ -3101,9 +3101,7 @@
       addCallbacks: true
       triggerUpCallbacks:
         - scriptComponent: !<reference.ScriptComponent> dfb342d6-6ac6-4bf1-be40-70a9c2647c5e
-          functionName: |
-            pickKhshathra
-
+          functionName: pickKhshathra
       triggerDownCallbacks:
         []
       onValueChangeCallbacks:
@@ -3226,7 +3224,23 @@
   Children:
     []
   Components:
+    - !<own> a6462d73-c77b-4366-9c0e-e3369471f683
+- !<ScriptComponent/51ae6f6a-5fd1-416d-8c38-0b312bb4b27c>
+  PrefabRemaps:
     []
+  Name: AshaPlayerState
+  Enabled: true
+  ScriptAsset: !<reference> 3efc5d4f-5a90-4094-9480-b35e4c33d5d1
+  ScriptInputsDefault:
+    {}
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      gameManager: !<MappingBased.AssignableType> cfdca290-8b54-48e6-b183-a5881aae79e2
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/51d41486-5e5c-413a-8f94-cde40c91fdfe>
   PrefabRemaps:
     []
@@ -3625,6 +3639,24 @@
   Components:
     - !<own> db398e5c-8ec7-4350-9ce9-025aee2db086
     - !<own> e30fdcb9-1c80-4a8d-a140-cda70beabf0b
+- !<ScriptComponent/5e618297-22b1-45a9-a2e6-38dc42c0f188>
+  PrefabRemaps:
+    []
+  Name: AshaVfx
+  Enabled: true
+  ScriptAsset: !<reference> 7d368ece-7526-4edb-af8d-bbc45d4c486e
+  ScriptInputsDefault:
+    selectionFx: true
+    revealFx: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      selectionFx: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      revealFx: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/5e92c416-54d3-4765-8da1-04b09c2dcbbc>
   PrefabRemaps:
     []
@@ -3919,7 +3951,7 @@
   PrefabRemaps:
     []
   Name: ArenaOrb
-  Enabled: true
+  Enabled: false
   Layers: 1
   LocalTransform: !<TransformEntity>
     Position: {x: 0.000000, y: 0.000000, z: 0.000000}
@@ -4691,7 +4723,7 @@
   ScriptInputs:
     "":
       _renderOrder: 0
-      _size: !<Vec3> {x: 15.000000, y: 4.500000, z: 1.000000}
+      _size: !<Vec3> {x: 7.000000, y: 3.000000, z: 1.000000}
       _inactive: false
       _playAudio: true
       _style: PrimaryNeutral
@@ -4769,7 +4801,7 @@
   Enabled: true
   Layers: 1
   LocalTransform: !<TransformEntity>
-    Position: {x: -4.000000, y: 0.000000, z: 0.000000}
+    Position: {x: 0.000000, y: -9.000000, z: 0.000000}
     Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
     Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
     HasSegmentScaleCompensation: false
@@ -5079,7 +5111,7 @@
   Children:
     []
   Components:
-    []
+    - !<own> ee75dfe3-3102-4097-99b4-15df8ea70386
 - !<SceneObject/81f39262-70d2-4359-8cc9-478d09486995>
   PrefabRemaps:
     []
@@ -5334,7 +5366,7 @@
   Enabled: true
   Layers: 1
   LocalTransform: !<TransformEntity>
-    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Position: {x: 0.000000, y: 3.000000, z: 0.000000}
     Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
     Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
     HasSegmentScaleCompensation: false
@@ -5810,7 +5842,7 @@
   ScriptInputs:
     "":
       _renderOrder: 0
-      _size: !<Vec3> {x: 15.000000, y: 4.500000, z: 1.000000}
+      _size: !<Vec3> {x: 7.000000, y: 3.000000, z: 1.000000}
       _inactive: false
       _playAudio: true
       _style: PrimaryNeutral
@@ -6107,7 +6139,7 @@
   Children:
     []
   Components:
-    []
+    - !<own> 51ae6f6a-5fd1-416d-8c38-0b312bb4b27c
 - !<SceneObject/98b02bd0-47a8-498e-a009-4f49110b65d7>
   PrefabRemaps:
     []
@@ -6231,7 +6263,7 @@
   Enabled: true
   Layers: 1
   LocalTransform: !<TransformEntity>
-    Position: {x: 4.000000, y: 0.000000, z: 0.000000}
+    Position: {x: 0.000000, y: -5.000000, z: 0.000000}
     Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
     Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
     HasSegmentScaleCompensation: false
@@ -6488,7 +6520,7 @@
   ScriptInputs:
     "":
       _renderOrder: 0
-      _size: !<Vec3> {x: 15.000000, y: 4.500000, z: 1.000000}
+      _size: !<Vec3> {x: 7.000000, y: 3.000000, z: 1.000000}
       _inactive: false
       _playAudio: true
       _style: PrimaryNeutral
@@ -6540,6 +6572,22 @@
     []
   Components:
     []
+- !<ScriptComponent/a6462d73-c77b-4366-9c0e-e3369471f683>
+  PrefabRemaps:
+    []
+  Name: AshaPlayerState
+  Enabled: true
+  ScriptAsset: !<reference> 3efc5d4f-5a90-4094-9480-b35e4c33d5d1
+  ScriptInputsDefault:
+    {}
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      gameManager: !<MappingBased.AssignableType> cfdca290-8b54-48e6-b183-a5881aae79e2
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/a6efdacf-43c9-4815-b84b-7ea412020cea>
   PrefabRemaps:
     []
@@ -6901,13 +6949,13 @@
 - !<SceneObject/add88ca8-2bcf-42f8-83a1-30d0cecebd1b>
   PrefabRemaps:
     []
-  Name: ScoreboardRoot
+  Name: AshaScoreboard
   Enabled: true
   Layers: 1
   LocalTransform: !<TransformEntity>
-    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Position: {x: 0.000000, y: 0.000000, z: -80.000000}
     Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    Scale: {x: 24.986652, y: 24.986652, z: 24.986652}
     HasSegmentScaleCompensation: false
   Children:
     - !<own> 34121b9a-6565-4828-b1a7-60eb6ddebd63
@@ -7751,6 +7799,24 @@
     []
   Components:
     - !<own> cfdca290-8b54-48e6-b183-a5881aae79e2
+- !<ScriptComponent/bfe60552-ab55-4940-8d9f-af3312c8114b>
+  PrefabRemaps:
+    []
+  Name: AshaHandTooltip
+  Enabled: true
+  ScriptAsset: !<reference> ebc5042b-10b4-4318-bf00-182836c36580
+  ScriptInputsDefault:
+    {}
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      tooltipRoot: !<reference.SceneObject> 3972f027-a296-4bda-84ed-2d552be7251c
+      titleText: !<reference.SceneObject> 404360a2-8df3-4ff2-bd30-8e6fdf5f5cf6
+      bodyText: !<reference.SceneObject> 391becf2-2b8b-48dc-87c5-1c921c97520a
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/bffb5b4f-981c-4f64-8d47-ca4199ff3403>
   PrefabRemaps:
     []
@@ -8156,9 +8222,8 @@
     HasSegmentScaleCompensation: false
   Children:
     - !<own> 614a1355-e0ac-4e3f-8621-9aec294e4f17
-    - !<own> add88ca8-2bcf-42f8-83a1-30d0cecebd1b
   Components:
-    []
+    - !<own> f4a2b85f-cd89-4508-aa9b-ad0b41459464
 - !<SceneObject/ce5ddc86-5862-4a31-8695-dacc5801a195>
   PrefabRemaps:
     []
@@ -8245,7 +8310,7 @@
   Enabled: true
   ScriptAsset: !<reference> 00c82f98-5a31-4caa-aebb-03d9db39f8f5
   ScriptInputsDefault:
-    {}
+    revealDelaySec: true
   ScriptTypesDefault:
     {}
   ScriptInputs:
@@ -8255,6 +8320,7 @@
       titleText: !<reference.SceneObject> 404360a2-8df3-4ff2-bd30-8e6fdf5f5cf6
       roundText: !<reference.SceneObject> 235c2e4b-da44-4880-b569-90fccfe098ad
       statusText: !<reference.SceneObject> 391becf2-2b8b-48dc-87c5-1c921c97520a
+      revealDelaySec: 1.200000
   ScriptTypes:
     "":
       {}
@@ -8288,6 +8354,21 @@
     - !<own> b19fb9d8-4ec2-4f43-ba26-e360dcb579e7
   Components:
     []
+- !<SceneObject/d191bdd6-5442-48f2-b264-2a31414aaeab>
+  PrefabRemaps:
+    []
+  Name: AshaVfx
+  Enabled: false
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: -80.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 24.986652, y: 24.986652, z: 24.986652}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 5e618297-22b1-45a9-a2e6-38dc42c0f188
 - !<SceneObject/d2376923-360c-4263-a989-7373e6d65600>
   PrefabRemaps:
     []
@@ -8670,7 +8751,7 @@
     {}
   ScriptInputs:
     "":
-      playerState: !<MappingBased.AssignableType> eebdd45f-c87d-45d9-9fd5-5b5f3a9e5e52
+      gameManager: !<MappingBased.AssignableType> cfdca290-8b54-48e6-b183-a5881aae79e2
       buttonObjects: !<reference.SceneObject[]>
         - !<reference> 2e840025-1937-4fb9-858b-3af79ba3bb37
         - !<reference> 8786fddd-7bdf-4e9c-b63c-258166aa82ff
@@ -8678,6 +8759,9 @@
         - !<reference> 9d8f4233-6b15-4963-9903-2372f9427127
         - !<reference> 7cc111e8-e595-44da-bf94-91c8cf3ffbeb
       buttonParent: !<reference.SceneObject> 8d323e73-0b13-49e0-a72d-3d336d6c5fb9
+      arenaOrbScript: !<reference.ScriptComponent> f4a2b85f-cd89-4508-aa9b-ad0b41459464
+      vfxScript: !<reference.ScriptComponent> 5e618297-22b1-45a9-a2e6-38dc42c0f188
+      tooltipScript: !<reference.ScriptComponent> bfe60552-ab55-4940-8d9f-af3312c8114b
   ScriptTypes:
     "":
       {}
@@ -8910,7 +8994,7 @@
   Enabled: true
   Layers: 1
   LocalTransform: !<TransformEntity>
-    Position: {x: 0.000000, y: -4.000000, z: 0.000000}
+    Position: {x: 0.000000, y: -1.000000, z: 0.000000}
     Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
     Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
     HasSegmentScaleCompensation: false
@@ -9089,6 +9173,22 @@
   ScriptTypes:
     "":
       {}
+- !<ScriptComponent/ee75dfe3-3102-4097-99b4-15df8ea70386>
+  PrefabRemaps:
+    []
+  Name: AshaPlayerState
+  Enabled: true
+  ScriptAsset: !<reference> 3efc5d4f-5a90-4094-9480-b35e4c33d5d1
+  ScriptInputsDefault:
+    {}
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      gameManager: !<MappingBased.AssignableType> cfdca290-8b54-48e6-b183-a5881aae79e2
+  ScriptTypes:
+    "":
+      {}
 - !<Text/eea678ce-7bc0-4501-b4d5-e9f2fb0273b4>
   PrefabRemaps:
     []
@@ -9170,22 +9270,6 @@
     CapitalizationOverride: None
   DepthTest: false
   TwoSided: false
-- !<ScriptComponent/eebdd45f-c87d-45d9-9fd5-5b5f3a9e5e52>
-  PrefabRemaps:
-    []
-  Name: AshaPlayerState
-  Enabled: true
-  ScriptAsset: !<reference> 3efc5d4f-5a90-4094-9480-b35e4c33d5d1
-  ScriptInputsDefault:
-    {}
-  ScriptTypesDefault:
-    {}
-  ScriptInputs:
-    "":
-      gameManager: !<MappingBased.AssignableType> cfdca290-8b54-48e6-b183-a5881aae79e2
-  ScriptTypes:
-    "":
-      {}
 - !<SceneObject/eef9ad86-23a9-421c-bf43-b4f7295d5f40>
   PrefabRemaps:
     []
@@ -9380,7 +9464,7 @@
   ScriptInputs:
     "":
       _renderOrder: 0
-      _size: !<Vec3> {x: 15.000000, y: 4.500000, z: 1.000000}
+      _size: !<Vec3> {x: 7.000000, y: 3.000000, z: 1.000000}
       _inactive: false
       _playAudio: true
       _style: PrimaryNeutral
@@ -9513,6 +9597,23 @@
     - !<own> bf63372b-e832-4ef2-9b2a-b6d89bc7cd57
     - !<own> 09fc9ca7-c127-4918-ab88-c310987666e8
     - !<own> 07d8f360-758b-4a7e-8007-23100d6a8185
+- !<ScriptComponent/f4a2b85f-cd89-4508-aa9b-ad0b41459464>
+  PrefabRemaps:
+    []
+  Name: AshaArenaOrb
+  Enabled: true
+  ScriptAsset: !<reference> f82f87cc-7b9e-4058-9c79-1054a49f678e
+  ScriptInputsDefault:
+    {}
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      orbText: !<reference.SceneObject> 391becf2-2b8b-48dc-87c5-1c921c97520a
+      orbRoot: !<reference.SceneObject> cd8543af-d2b8-4c2b-8630-ea33cca18510
+  ScriptTypes:
+    "":
+      {}
 - !<Text/f67c3807-b4f4-47ba-9117-a64fca2f6486>
   PrefabRemaps:
     []
@@ -9708,15 +9809,17 @@
   Children:
     - !<own> 17f2581f-366c-4959-8766-1fb2b367cf2c
     - !<own> bfbdb79e-1f00-42df-a828-08c7e18ea5b8
-    - !<own> 246ffb37-2216-403a-8d68-7ce79e33cfb6
+    - !<own> 1303aec4-2c00-4379-866a-26d772f3ab4d
     - !<own> 979aa89e-206f-492e-b857-6b95e794c65f
     - !<own> 51557b20-7476-43c0-b8b2-72f55b543bfc
     - !<own> 80aa8a6a-6b85-428e-a508-259b4bdd98f8
-    - !<own> 1303aec4-2c00-4379-866a-26d772f3ab4d
     - !<own> 0098f0c8-556f-48ab-a0aa-c62a55bd1ee2
     - !<own> 44478a88-6dd8-4434-a7c7-b5a37b0d4617
-    - !<own> cd8543af-d2b8-4c2b-8630-ea33cca18510
     - !<own> 51d41486-5e5c-413a-8f94-cde40c91fdfe
+    - !<own> 3972f027-a296-4bda-84ed-2d552be7251c
+    - !<own> cd8543af-d2b8-4c2b-8630-ea33cca18510
+    - !<own> d191bdd6-5442-48f2-b264-2a31414aaeab
+    - !<own> add88ca8-2bcf-42f8-83a1-30d0cecebd1b
   Components:
     []
 - !<ScriptComponent/fc27a425-669a-49fd-bf10-7d4cfff08ae2>

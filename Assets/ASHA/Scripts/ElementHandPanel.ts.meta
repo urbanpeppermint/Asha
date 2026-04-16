@@ -26,9 +26,12 @@
   ExportUid: 00000000-0000-0000-0000-000000000000
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
+    arenaOrbScript: false
     buttonObjects: false
     buttonParent: false
-    playerState: false
+    gameManager: false
+    tooltipScript: false
+    vfxScript: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -38,14 +41,20 @@
   Attachments:
     []
   DefaultScriptInputs:
-    - playerState: !<MappingBased.AssignableType> 00000000-0000-0000-0000-000000000000
+    - gameManager: !<MappingBased.AssignableType> 00000000-0000-0000-0000-000000000000
       buttonObjects: !<reference.SceneObject[]>
         []
       buttonParent: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      arenaOrbScript: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      vfxScript: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      tooltipScript: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
     -
       {}
   InputLines:
-    - // @input AssignableType playerState
+    - // @input AssignableType gameManager
     - "// @input SceneObject[] buttonObjects = {}"
     - // @input SceneObject buttonParent
+    - // @input Component.ScriptComponent arenaOrbScript
+    - // @input Component.ScriptComponent vfxScript
+    - // @input Component.ScriptComponent tooltipScript
