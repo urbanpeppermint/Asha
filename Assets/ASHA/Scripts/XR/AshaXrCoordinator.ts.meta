@@ -33,7 +33,6 @@
     handAura: false
     handPanelScript: false
     orbVfx: false
-    requireWorldPlacementForChoosing: false
     worldPlacement: false
   ScriptTypesHidden:
     {}
@@ -52,7 +51,6 @@
       worldPlacement: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
       cardsMenuRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       handPanelScript: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
-      requireWorldPlacementForChoosing: true
   ScriptTypes:
     -
       {}
@@ -65,4 +63,3 @@
     - // @input Component.ScriptComponent worldPlacement
     - // @input SceneObject cardsMenuRoot
     - // @input Component.ScriptComponent handPanelScript
-    - // @input bool requireWorldPlacementForChoosing = true

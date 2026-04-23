@@ -28,6 +28,7 @@
   ScriptInputsHidden:
     allowFallbackWithoutHit: false
     arenaRoot: false
+    defaultScale: false
     fallbackDelaySec: false
     fallbackDistance: false
     filterEnabled: false
@@ -35,6 +36,7 @@
     pendingHint: false
     placementHintText: false
     placementIndicatorRoot: false
+    scaleStep: false
     useSemanticClassification: false
   ScriptTypesHidden:
     {}
@@ -47,11 +49,13 @@
   DefaultScriptInputs:
     - arenaRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       hideArenaUntilPlaced: true
-      fallbackDistance: !<float> 80.000000
       filterEnabled: true
       useSemanticClassification: false
       allowFallbackWithoutHit: false
+      fallbackDistance: !<float> 80.000000
       fallbackDelaySec: !<float> 3.000000
+      defaultScale: !<float> 1.000000
+      scaleStep: 0.100000
       placementIndicatorRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       placementHintText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       pendingHint: Look at a table/floor to place arena
@@ -61,11 +65,13 @@
   InputLines:
     - // @input SceneObject arenaRoot
     - // @input bool hideArenaUntilPlaced = true
-    - // @input float fallbackDistance = 80
     - // @input bool filterEnabled = true
     - // @input bool useSemanticClassification
     - // @input bool allowFallbackWithoutHit
+    - // @input float fallbackDistance = 80
     - // @input float fallbackDelaySec = 3
+    - // @input float defaultScale = 1
+    - // @input float scaleStep = 0.1
     - // @input SceneObject placementIndicatorRoot
     - // @input SceneObject placementHintText
-    - '// @input string pendingHint = "Look at a table/floor to place arena"'
+    - '// @input string pendingHint = "Look at a surface, then release pinch to place"'

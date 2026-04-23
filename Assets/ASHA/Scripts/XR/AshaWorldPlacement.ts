@@ -1,85 +1,142 @@
 import { SyncKitLogger } from 'SpectaclesSyncKit.lspkg/Utils/SyncKitLogger'
-const SIK = require('SpectaclesInteractionKit.lspkg/SIK').SIK
+import { SyncEntity } from 'SpectaclesSyncKit.lspkg/Core/SyncEntity'
+import { StorageProperty } from 'SpectaclesSyncKit.lspkg/Core/StorageProperty'
+import { StoragePropertySet } from 'SpectaclesSyncKit.lspkg/Core/StoragePropertySet'
 
-const TAG = 'AshaWorldPlacement'
-// See docs: https://developers.snap.com/spectacles/about-spectacles-features/apis/world-query#semantic-hit-testing
+const SIK = require('SpectaclesInteractionKit.lspkg/SIK').SIK
+const InteractorTriggerType = require('SpectaclesInteractionKit.lspkg/Core/Interactor/Interactor').InteractorTriggerType
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const WorldQueryModule = require('LensStudio:WorldQueryModule') as any
+
+const TAG = 'AshaWorldPlacement'
 const EPSILON = 0.01
 
-/**
- * Enhancement 1 — world-anchored arena (additive).
- * Tries Lens hit-test / world query if available; otherwise places relative to camera.
- * See: https://developers.snap.com/spectacles/about-spectacles-features/apis/world-query
- */
+function sn(p: StorageProperty<number>, fb: number): number {
+  const v = p.currentOrPendingValue ?? p.currentValue
+  return (v !== null && v !== undefined) ? (v as number) : fb
+}
+
 @component
 export class AshaWorldPlacement extends BaseScriptComponent {
 
   @input arenaRoot: SceneObject
-  /** Sample-style behavior: hide arena until we get a valid hit result. */
   @input hideArenaUntilPlaced: boolean = true
-  @input fallbackDistance: number = 80
   @input filterEnabled: boolean = true
-  /** Set true only if Experimental APIs are enabled in Project Settings. */
   @input useSemanticClassification: boolean = false
   @input allowFallbackWithoutHit: boolean = false
+  @input fallbackDistance: number = 80
   @input fallbackDelaySec: number = 3.0
+  @input defaultScale: number = 1.0
+  @input scaleStep: number = 0.1
   @input('SceneObject') @allowUndefined placementIndicatorRoot: SceneObject
   @input('SceneObject') @allowUndefined placementHintText: SceneObject
-  @input pendingHint: string = 'Look at a table/floor to place arena'
+  @input pendingHint: string = 'Look at a surface, then release pinch to place'
 
   private readonly log = new SyncKitLogger(TAG)
   private placed = false
+  private inPlacementMode = false
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private hitSession: any = null
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private primaryInteractor: any = null
-  private worldQueryWarned = false
   private warnedMissingIndicator = false
+  private worldQueryWarned = false
+  private lastHitPos: vec3 | null = null
+  private lastHitRot: quat | null = null
+  private syncedVersionSeen = -1
+
+  // Shared transform (same arena pose/scale across devices)
+  private px = StorageProperty.manualFloat('arenaPx', 0)
+  private py = StorageProperty.manualFloat('arenaPy', 0)
+  private pz = StorageProperty.manualFloat('arenaPz', 0)
+  private qx = StorageProperty.manualFloat('arenaQx', 0)
+  private qy = StorageProperty.manualFloat('arenaQy', 0)
+  private qz = StorageProperty.manualFloat('arenaQz', 0)
+  private qw = StorageProperty.manualFloat('arenaQw', 1)
+  private sc = StorageProperty.manualFloat('arenaSc', 1)
+  private ver = StorageProperty.manualInt('arenaVer', 0)
+  private syncEntity: SyncEntity
 
   onAwake() {
+    const props: StorageProperty<any>[] = [
+      this.px, this.py, this.pz, this.qx, this.qy, this.qz, this.qw, this.sc, this.ver,
+    ]
+    this.syncEntity = new SyncEntity(this, new StoragePropertySet(props), false, 'Session')
+    this.syncEntity.notifyOnReady(() => this.onSyncReady())
+
     this.createEvent('OnStartEvent').bind(() => this.onStart())
     this.createEvent('UpdateEvent').bind(() => this.tickWorldQuery())
+
     if (this.hideArenaUntilPlaced && this.arenaRoot) this.arenaRoot.enabled = false
-    this.updateIndicator(true)
+    this.updateIndicator(false)
   }
 
-  /** Used by XR coordinator to gate card menu until placement completes. */
   public isPlaced(): boolean {
     return this.placed
   }
 
+  public enablePlacementMode() {
+    this.inPlacementMode = true
+    this.updateIndicator(true)
+    this.beginWorldQuery()
+  }
+
+  public disablePlacementMode() {
+    this.inPlacementMode = false
+    this.updateIndicator(false)
+    this.hitSession?.stop?.()
+  }
+
+  public confirmCurrentHitPlacement() {
+    if (!this.lastHitPos || !this.lastHitRot) return
+    this.commitSharedPlacement(this.lastHitPos, this.lastHitRot, this.readCurrentScale())
+  }
+
+  public scaleUp() { this.adjustScale(+this.scaleStep) }
+  public scaleDown() { this.adjustScale(-this.scaleStep) }
+
   private onStart() {
     const d = this.createEvent('DelayedCallbackEvent')
-    d.bind(() => this.beginWorldQuery())
+    d.bind(() => { if (!this.placed) this.enablePlacementMode() })
     d.reset(1.0)
   }
 
+  private onSyncReady() {
+    ;(this.ver as any).onRemoteChange?.add?.(() => this.onSharedPlacementChanged())
+    this.onSharedPlacementChanged()
+  }
+
+  private onSharedPlacementChanged() {
+    const v = sn(this.ver, 0)
+    if (v <= this.syncedVersionSeen) return
+    this.syncedVersionSeen = v
+    if (v <= 0) return
+    this.applyFromSharedProps()
+    this.log.i(`Applied shared arena placement v${v}`)
+  }
+
   private beginWorldQuery() {
-    if (this.placed || !this.arenaRoot) return
+    if (!this.inPlacementMode || !this.arenaRoot) return
     this.hitSession = this.createHitSession(this.useSemanticClassification)
     if (!this.hitSession && this.useSemanticClassification) {
-      // Retry with classification disabled to match non-experimental setup.
       this.hitSession = this.createHitSession(false)
-      if (this.hitSession) {
-        this.log.w('Semantic classification unavailable; continuing with standard WorldQuery hit test')
-      }
+      if (this.hitSession) this.log.w('Semantic classification unavailable; using standard hit test')
     }
 
     if (this.hitSession && typeof this.hitSession.hitTest === 'function') {
+      this.hitSession.start?.()
       this.log.i('WorldQuery hit session ready')
-      this.updateIndicator(true)
       if (this.allowFallbackWithoutHit) {
         const fb = this.createEvent('DelayedCallbackEvent')
         fb.bind(() => {
-          if (!this.placed) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            this.applyFallback((globalThis as any).scene)
-            this.placed = true
-            if (this.arenaRoot) this.arenaRoot.enabled = true
-            this.updateIndicator(false)
-            this.log.w('No surface hit in time — fallback placement used')
-          }
+          if (this.placed || !this.inPlacementMode) return
+          this.applyFallback()
+          this.commitSharedPlacement(
+            this.arenaRoot.getTransform().getWorldPosition(),
+            this.arenaRoot.getTransform().getWorldRotation(),
+            this.readCurrentScale(),
+          )
+          this.log.w('No surface hit in time — fallback placement used')
         })
         fb.reset(Math.max(0.1, this.fallbackDelaySec))
       }
@@ -87,17 +144,16 @@ export class AshaWorldPlacement extends BaseScriptComponent {
     }
 
     if (this.allowFallbackWithoutHit) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.applyFallback((globalThis as any).scene)
-      this.placed = true
-      if (this.arenaRoot) this.arenaRoot.enabled = true
-      this.updateIndicator(false)
+      this.applyFallback()
+      this.commitSharedPlacement(
+        this.arenaRoot.getTransform().getWorldPosition(),
+        this.arenaRoot.getTransform().getWorldRotation(),
+        this.readCurrentScale(),
+      )
       this.log.w('WorldQuery unavailable — fallback placement used')
-    } else {
-      if (!this.worldQueryWarned) {
-        this.worldQueryWarned = true
-        this.log.w('WorldQuery unavailable and fallback disabled; placement required before cards')
-      }
+    } else if (!this.worldQueryWarned) {
+      this.worldQueryWarned = true
+      this.log.w('WorldQuery unavailable and fallback disabled; placement required before cards')
     }
   }
 
@@ -118,7 +174,7 @@ export class AshaWorldPlacement extends BaseScriptComponent {
   }
 
   private tickWorldQuery() {
-    if (this.placed || !this.hitSession || !this.arenaRoot) return
+    if (!this.inPlacementMode || !this.hitSession || !this.arenaRoot) return
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sceneAny = (globalThis as any).scene
     let rayStart: vec3 | null = null
@@ -156,45 +212,97 @@ export class AshaWorldPlacement extends BaseScriptComponent {
     }
     if (!rayStart || !rayEnd) return
 
-    this.hitSession.hitTest(rayStart, rayEnd, (result: { position?: vec3; classification?: number } | null) => {
-      if (!this.placed) this.placeIndicatorAt(result?.position ?? rayEnd)
-      if (this.placed || !result || !result.position) return
-      this.arenaRoot.getTransform().setWorldPosition(result.position)
-      if ((result as any).normal) {
-        const hitNormal = (result as any).normal as vec3
-        let lookDirection: vec3
-        if (1 - Math.abs(hitNormal.normalize().dot(vec3.up())) < EPSILON) {
-          lookDirection = vec3.forward()
-        } else {
-          lookDirection = hitNormal.cross(vec3.up())
-        }
-        const toRotation = quat.lookAt(lookDirection, hitNormal)
-        this.arenaRoot.getTransform().setWorldRotation(toRotation)
+    this.hitSession.hitTest(rayStart, rayEnd, (result: { position?: vec3; normal?: vec3 } | null) => {
+      if (result?.position) {
+        const rot = this.computeHitRotation(result.normal)
+        this.lastHitPos = result.position
+        this.lastHitRot = rot
+        this.placeIndicatorAt(result.position, rot)
+      } else {
+        this.setIndicatorVisible(false)
       }
-      this.log.i('Arena placed from WorldQuery hit')
-      this.placed = true
-      if (this.arenaRoot) this.arenaRoot.enabled = true
-      this.updateIndicator(false)
+      // Match sample behavior: commit when trigger is released on valid hit.
+      const ended =
+        this.primaryInteractor &&
+        this.primaryInteractor.previousTrigger !== InteractorTriggerType.None &&
+        this.primaryInteractor.currentTrigger === InteractorTriggerType.None
+      if (ended && this.lastHitPos && this.lastHitRot) {
+        this.commitSharedPlacement(this.lastHitPos, this.lastHitRot, this.readCurrentScale())
+      }
     })
   }
 
-  private applyFallback(sceneAny: any) {
-    if (!this.arenaRoot) return
-    this.log.w('Surface hit test unavailable — using camera fallback')
-    const cam = sceneAny?.getCamera?.() ?? sceneAny?.getMainCamera?.()
-    const tr = this.arenaRoot.getTransform()
-    if (cam && cam.getTransform) {
-      const ct = cam.getTransform()
-      const p = ct.getWorldPosition()
-      const f = ct.forward
-      const t = new vec3(
-        p.x + f.x * this.fallbackDistance,
-        p.y + f.y * this.fallbackDistance,
-        p.z + f.z * this.fallbackDistance,
-      )
-      tr.setWorldPosition(t)
-      this.placeIndicatorAt(t)
+  private computeHitRotation(normal?: vec3): quat {
+    if (!normal) return this.arenaRoot.getTransform().getWorldRotation()
+    let lookDirection: vec3
+    if (1 - Math.abs(normal.normalize().dot(vec3.up())) < EPSILON) {
+      lookDirection = vec3.forward()
+    } else {
+      lookDirection = normal.cross(vec3.up())
     }
+    return quat.lookAt(lookDirection, normal)
+  }
+
+  private commitSharedPlacement(pos: vec3, rot: quat, scale: number) {
+    this.px.setPendingValue(pos.x)
+    this.py.setPendingValue(pos.y)
+    this.pz.setPendingValue(pos.z)
+    this.qx.setPendingValue(rot.x)
+    this.qy.setPendingValue(rot.y)
+    this.qz.setPendingValue(rot.z)
+    this.qw.setPendingValue(rot.w)
+    this.sc.setPendingValue(Math.max(0.05, scale))
+    this.ver.setPendingValue(sn(this.ver, 0) + 1)
+    this.applyLocalPlacement(pos, rot, scale)
+    this.log.i('Arena placement committed (shared)')
+  }
+
+  private applyFromSharedProps() {
+    const pos = new vec3(sn(this.px, 0), sn(this.py, 0), sn(this.pz, 0))
+    const rot = new quat(sn(this.qx, 0), sn(this.qy, 0), sn(this.qz, 0), sn(this.qw, 1))
+    const scale = Math.max(0.05, sn(this.sc, this.defaultScale))
+    this.applyLocalPlacement(pos, rot, scale)
+  }
+
+  private applyLocalPlacement(pos: vec3, rot: quat, scale: number) {
+    if (!this.arenaRoot) return
+    const tr = this.arenaRoot.getTransform()
+    tr.setWorldPosition(pos)
+    tr.setWorldRotation(rot)
+    tr.setLocalScale(new vec3(scale, scale, scale))
+    this.placed = true
+    this.arenaRoot.enabled = true
+    this.disablePlacementMode()
+  }
+
+  private readCurrentScale(): number {
+    if (!this.arenaRoot) return this.defaultScale
+    return Math.max(0.05, this.arenaRoot.getTransform().getLocalScale().x)
+  }
+
+  private adjustScale(delta: number) {
+    if (!this.placed || !this.arenaRoot) return
+    const tr = this.arenaRoot.getTransform()
+    const pos = tr.getWorldPosition()
+    const rot = tr.getWorldRotation()
+    const next = Math.max(0.05, this.readCurrentScale() + delta)
+    this.commitSharedPlacement(pos, rot, next)
+  }
+
+  private applyFallback() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sceneAny = (globalThis as any).scene
+    const cam = sceneAny?.getCamera?.() ?? sceneAny?.getMainCamera?.()
+    if (!cam || !cam.getTransform || !this.arenaRoot) return
+    const ct = cam.getTransform()
+    const p = ct.getWorldPosition()
+    const f = ct.forward
+    const pos = new vec3(
+      p.x + f.x * this.fallbackDistance,
+      p.y + f.y * this.fallbackDistance,
+      p.z + f.z * this.fallbackDistance,
+    )
+    this.arenaRoot.getTransform().setWorldPosition(pos)
   }
 
   private updateIndicator(show: boolean) {
@@ -202,7 +310,7 @@ export class AshaWorldPlacement extends BaseScriptComponent {
       this.warnedMissingIndicator = true
       this.log.w('Placement indicator not assigned; wire placementIndicatorRoot or placementHintText')
     }
-    if (this.placementIndicatorRoot) this.placementIndicatorRoot.enabled = show
+    if (!show) this.setIndicatorVisible(false)
     if (this.placementHintText) {
       const t = this.placementHintText.getComponent('Component.Text')
       if (t) (t as any).text = show ? this.pendingHint : ''
@@ -210,8 +318,15 @@ export class AshaWorldPlacement extends BaseScriptComponent {
     }
   }
 
-  private placeIndicatorAt(worldPos: vec3) {
-    if (!this.placementIndicatorRoot || !worldPos) return
-    this.placementIndicatorRoot.getTransform().setWorldPosition(worldPos)
+  private placeIndicatorAt(worldPos: vec3, worldRot?: quat) {
+    if (!this.placementIndicatorRoot) return
+    this.setIndicatorVisible(true)
+    const tr = this.placementIndicatorRoot.getTransform()
+    tr.setWorldPosition(worldPos)
+    if (worldRot) tr.setWorldRotation(worldRot)
+  }
+
+  private setIndicatorVisible(v: boolean) {
+    if (this.placementIndicatorRoot) this.placementIndicatorRoot.enabled = v
   }
 }

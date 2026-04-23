@@ -41,8 +41,6 @@ export class AshaXrCoordinator extends BaseScriptComponent {
   @input('Component.ScriptComponent') @allowUndefined worldPlacement: ScriptComponent
   @input('SceneObject') @allowUndefined cardsMenuRoot: SceneObject
   @input('Component.ScriptComponent') @allowUndefined handPanelScript: ScriptComponent
-  /** Strict mode: if worldPlacement is missing, choosing is blocked. */
-  @input requireWorldPlacementForChoosing: boolean = true
 
   private readonly log = new SyncKitLogger(TAG)
   private lastPhase = ''
@@ -96,10 +94,10 @@ export class AshaXrCoordinator extends BaseScriptComponent {
     }
     const wp = this.worldPlacement as unknown as AshaWorldPlacement | null
     const hasWp = !!wp && typeof wp.isPlaced === 'function'
-    const placed = hasWp ? (wp.isPlaced() === true) : !this.requireWorldPlacementForChoosing
-    if (!hasWp && this.requireWorldPlacementForChoosing && !this.missingWpWarned) {
+    const placed = hasWp ? (wp.isPlaced() === true) : false
+    if (!hasWp && !this.missingWpWarned) {
       this.missingWpWarned = true
-      this.log.w('worldPlacement is not wired on XrCoordinator; choosing is blocked by strict gate')
+      this.log.w('worldPlacement is not wired on XrCoordinator; choosing is blocked until wired')
     }
     this.applyCardsEnabled(placed, hp)
     if (!placed && !this.cardsGateAnnounced) {

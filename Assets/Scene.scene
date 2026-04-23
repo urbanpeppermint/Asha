@@ -790,6 +790,62 @@
     []
   Components:
     - !<own> 0a192f62-31c9-4600-b65a-fbfcbfe9e30a
+- !<ScriptComponent/122885d9-280c-42b6-806c-90a01d65aa62>
+  PrefabRemaps:
+    []
+  Name: InteractableManipulation
+  Enabled: true
+  ScriptAsset: !<reference> 664b556b-1946-4c2c-866a-e675b4e86006
+  ScriptInputsDefault:
+    minimumScaleFactor: true
+    maximumScaleFactor: true
+    enableTranslation: true
+    enableRotation: true
+    enableScale: true
+    enableStretchZ: true
+    showStretchZProperties: true
+    zStretchFactorMin: true
+    zStretchFactorMax: true
+    useFilter: true
+    showFilterProperties: true
+    minCutoff: true
+    beta: true
+    dcutoff: true
+    showTranslationProperties: true
+    _enableXTranslation: true
+    _enableYTranslation: true
+    _enableZTranslation: true
+    showRotationProperties: true
+    _rotationAxis: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      manipulateRootSceneObject: !<reference.SceneObject> 53a64736-5cf1-4514-817c-d81c7ea8357c
+      minimumScaleFactor: 0.250000
+      maximumScaleFactor: !<float> 20.000000
+      enableTranslation: true
+      enableRotation: true
+      enableScale: true
+      enableStretchZ: true
+      showStretchZProperties: false
+      zStretchFactorMin: !<float> 1.000000
+      zStretchFactorMax: !<float> 12.000000
+      useFilter: true
+      showFilterProperties: false
+      minCutoff: !<float> 2.000000
+      beta: 0.015000
+      dcutoff: !<float> 1.000000
+      showTranslationProperties: false
+      _enableXTranslation: true
+      _enableYTranslation: true
+      _enableZTranslation: true
+      showRotationProperties: false
+      _rotationAxis: All
+      isSynced: true
+  ScriptTypes:
+    "":
+      {}
 - !<BodyComponent/125f23cf-add4-49f1-9141-2fd0446ac0b5>
   PrefabRemaps:
     []
@@ -3611,6 +3667,7 @@
     []
   Components:
     - !<own> b6d0efa7-78f3-4c70-9716-d5b77fd2f038
+    - !<own> 122885d9-280c-42b6-806c-90a01d65aa62
 - !<SceneObject/55a93483-11c3-444b-824f-eae624db62eb>
   PrefabRemaps:
     []
@@ -5648,7 +5705,7 @@
   Enabled: true
   ScriptAsset: !<reference> 6eb4795b-395d-4d72-9db1-ac42a90218cb
   ScriptInputsDefault:
-    requireWorldPlacementForChoosing: true
+    {}
   ScriptTypesDefault:
     {}
   ScriptInputs:
@@ -5661,7 +5718,6 @@
       worldPlacement: !<reference.ScriptComponent> c08b7eff-e5d9-48f0-89b3-4a889fc63e09
       cardsMenuRoot: !<reference.SceneObject> 8d323e73-0b13-49e0-a72d-3d336d6c5fb9
       handPanelScript: !<reference.ScriptComponent> dfb342d6-6ac6-4bf1-be40-70a9c2647c5e
-      requireWorldPlacementForChoosing: true
   ScriptTypes:
     "":
       {}
@@ -8423,11 +8479,11 @@
   ScriptAsset: !<reference> 04d48e4c-751b-4818-a051-1ae9910b4eee
   ScriptInputsDefault:
     hideArenaUntilPlaced: true
-    fallbackDistance: true
     filterEnabled: true
-    useSemanticClassification: true
-    allowFallbackWithoutHit: true
+    fallbackDistance: true
     fallbackDelaySec: true
+    defaultScale: true
+    scaleStep: true
     pendingHint: true
   ScriptTypesDefault:
     {}
@@ -8435,11 +8491,13 @@
     "":
       arenaRoot: !<reference.SceneObject> cd8543af-d2b8-4c2b-8630-ea33cca18510
       hideArenaUntilPlaced: true
-      fallbackDistance: !<float> 80.000000
       filterEnabled: true
-      useSemanticClassification: false
-      allowFallbackWithoutHit: false
+      useSemanticClassification: true
+      allowFallbackWithoutHit: true
+      fallbackDistance: !<float> 80.000000
       fallbackDelaySec: !<float> 3.000000
+      defaultScale: !<float> 1.000000
+      scaleStep: 0.100000
       placementIndicatorRoot: !<reference.SceneObject> c31c960d-2c54-496f-8264-e728a31f578b
       placementHintText: !<reference.SceneObject> 235c2e4b-da44-4880-b569-90fccfe098ad
       pendingHint: Look at a table/floor to place arena

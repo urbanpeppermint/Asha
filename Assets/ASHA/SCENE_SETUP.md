@@ -222,12 +222,24 @@ EnableOnReady
 | `useSemanticClassification` | false by default; set true only if Experimental APIs are enabled |
 | `allowFallbackWithoutHit` | **false** to force real surface hit before cards |
 | `fallbackDelaySec` | 3.0 (used only when fallback is enabled) |
+| `defaultScale` | initial arena scale (shared across users) |
+| `scaleStep` | amount used by `scaleUp/scaleDown` |
 | `placementIndicatorRoot` | optional reticle/marker SceneObject shown while waiting for placement |
 | `placementHintText` | optional world Text object shown while waiting |
 | `pendingHint` | message shown in `placementHintText` while placement is pending |
 
 `AshaWorldPlacement` exposes `isPlaced()` and is used by `AshaXrCoordinator` to gate card input.
 If you do not wire `placementIndicatorRoot`/`placementHintText`, no visual cue will appear (script logs one warning).
+
+Placement interaction now matches sample style:
+- live hit cursor follows valid surface hits
+- releasing pinch/trigger commits placement
+- committed placement is synced to all devices (same position/rotation/scale)
+
+Optional control buttons can call:
+- `enablePlacementMode()` (start re-placement mode)
+- `confirmCurrentHitPlacement()` (manual confirm)
+- `scaleUp()` / `scaleDown()` (shared scale)
 
 #### AshaAudio
 
@@ -280,7 +292,6 @@ If you do not wire `placementIndicatorRoot`/`placementHintText`, no visual cue w
 | `worldPlacement` | **Script Component** on `WorldPlacement` object |
 | `cardsMenuRoot` | hand cards root (`ASHA_HandPanel/buttonParent`) |
 | `handPanelScript` | **Script Component** on `ASHA_HandPanel` (`ElementHandPanel`) |
-| `requireWorldPlacementForChoosing` | true (recommended strict gate; cards blocked if `worldPlacement` is missing) |
 
 What it drives:
 - resets trail/aura when phase returns to `choosing`
@@ -289,6 +300,7 @@ What it drives:
 - opponent reveal sounds from `opponentAudioSources`
 - **cards gate:** in `choosing`, keeps cards hidden until `worldPlacement.isPlaced()` is true
 - gate is enforced both on `cardsMenuRoot.enabled` and `handPanelScript.setEnabled(...)` so GameManager cannot re-show cards early
+- if `worldPlacement` is not wired, choosing remains blocked (fail-safe)
 
 #### AshaXrPickFeedback
 
