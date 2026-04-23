@@ -1,0 +1,23 @@
+- !<AnimationCurveTrack/a04c525e-a17a-49c2-94ee-09b7cc3bdd41>
+  PackagePath: ""
+  TrackProperties:
+    - Size
+  Properties:
+    Size:
+      keyFrames:
+        - time: 0.000000
+          value:
+            data: 1.000000
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.330000, y: 0.330000}
+            outControlWeight: {x: 0.427206, y: 0.046066}
+        - time: 3.000000
+          value:
+            data: 0.000000
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.117045, y: 0.979345}
+            outControlWeight: {x: 0.330000, y: 0.330000}

@@ -1,0 +1,71 @@
+- !<AssetImportMetadata/c7cb8605-145d-4d93-a751-d7121a7349fc>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> 04d48e4c-751b-4818-a051-1ae9910b4eee
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> 04d48e4c-751b-4818-a051-1ae9910b4eee
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> bf488187-361c-4a49-b06f-ecf644bb35d6
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/bf488187-361c-4a49-b06f-ecf644bb35d6>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 31eb97e5-a50a-4aaf-a0f0-28c8e763a1b8
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    allowFallbackWithoutHit: false
+    arenaRoot: false
+    fallbackDelaySec: false
+    fallbackDistance: false
+    filterEnabled: false
+    hideArenaUntilPlaced: false
+    pendingHint: false
+    placementHintText: false
+    placementIndicatorRoot: false
+    useSemanticClassification: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - arenaRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      hideArenaUntilPlaced: true
+      fallbackDistance: !<float> 80.000000
+      filterEnabled: true
+      useSemanticClassification: false
+      allowFallbackWithoutHit: false
+      fallbackDelaySec: !<float> 3.000000
+      placementIndicatorRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      placementHintText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      pendingHint: Look at a table/floor to place arena
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input SceneObject arenaRoot
+    - // @input bool hideArenaUntilPlaced = true
+    - // @input float fallbackDistance = 80
+    - // @input bool filterEnabled = true
+    - // @input bool useSemanticClassification
+    - // @input bool allowFallbackWithoutHit
+    - // @input float fallbackDelaySec = 3
+    - // @input SceneObject placementIndicatorRoot
+    - // @input SceneObject placementHintText
+    - '// @input string pendingHint = "Look at a table/floor to place arena"'

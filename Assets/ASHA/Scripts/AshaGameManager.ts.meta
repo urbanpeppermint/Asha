@@ -26,10 +26,13 @@
   ExportUid: 00000000-0000-0000-0000-000000000000
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
+    backToMenuButton: false
     battleLogText: false
+    editorDisplayNameOverride: false
     nextRoundButton: false
     revealDelaySec: false
     roundText: false
+    startMenuRoot: false
     statusText: false
     titleText: false
   ScriptTypesHidden:
@@ -46,7 +49,10 @@
       titleText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       roundText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       statusText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      backToMenuButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      startMenuRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       revealDelaySec: 1.200000
+      editorDisplayNameOverride: ""
   ScriptTypes:
     -
       {}
@@ -56,4 +62,7 @@
     - // @input SceneObject titleText
     - // @input SceneObject roundText
     - // @input SceneObject statusText
+    - '// @input SceneObject backToMenuButton {"hint":"Optional: in-game \"Back to Main Menu\" button (host only)"}'
+    - '// @input SceneObject startMenuRoot {"hint":"Optional: the Sync Kit StartMenu scene object. If wired, \"Back to Main Menu\" will re-show the built-in Solo / Multi selector."}'
     - // @input float revealDelaySec = 1.2
+    - '// @input string editorDisplayNameOverride {"hint":"Connected Preview often shows displayName as Preview 0. Set to test names in Lens Studio; leave empty on device for real UserInfo."}'

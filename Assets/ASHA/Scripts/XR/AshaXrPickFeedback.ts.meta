@@ -1,0 +1,47 @@
+- !<AssetImportMetadata/46d5b192-b815-4251-b600-8cf9d3d9a723>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> e46f32be-99cb-4298-b26a-3e5f888deba9
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> e46f32be-99cb-4298-b26a-3e5f888deba9
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 95769a86-83b3-45ac-9b86-ee6d07967f58
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/95769a86-83b3-45ac-9b86-ee6d07967f58>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 2c85b7e6-1ba7-492d-919a-3ec0e773a814
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    ashaAudio: false
+    elementTrail: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - ashaAudio: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      elementTrail: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input Component.ScriptComponent ashaAudio
+    - // @input Component.ScriptComponent elementTrail

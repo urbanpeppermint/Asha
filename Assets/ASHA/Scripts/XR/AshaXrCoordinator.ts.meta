@@ -1,0 +1,68 @@
+- !<AssetImportMetadata/07d6628e-ab04-4a2d-8893-6e737c183019>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> 6eb4795b-395d-4d72-9db1-ac42a90218cb
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> 6eb4795b-395d-4d72-9db1-ac42a90218cb
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> b341ca10-7997-42e6-b40c-5ab4af625f39
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/b341ca10-7997-42e6-b40c-5ab4af625f39>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 99b9f117-80f6-4b11-99b9-ac2c18b5d124
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    ashaAudio: false
+    cardsMenuRoot: false
+    elementTrail: false
+    gameManager: false
+    handAura: false
+    handPanelScript: false
+    orbVfx: false
+    requireWorldPlacementForChoosing: false
+    worldPlacement: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - gameManager: !<MappingBased.AssignableType> 00000000-0000-0000-0000-000000000000
+      ashaAudio: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      orbVfx: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      elementTrail: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      handAura: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      worldPlacement: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      cardsMenuRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      handPanelScript: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      requireWorldPlacementForChoosing: true
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input AssignableType gameManager
+    - // @input Component.ScriptComponent ashaAudio
+    - // @input Component.ScriptComponent orbVfx
+    - // @input Component.ScriptComponent elementTrail
+    - // @input Component.ScriptComponent handAura
+    - // @input Component.ScriptComponent worldPlacement
+    - // @input SceneObject cardsMenuRoot
+    - // @input Component.ScriptComponent handPanelScript
+    - // @input bool requireWorldPlacementForChoosing = true

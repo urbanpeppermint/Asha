@@ -1,0 +1,150 @@
+- !<AssetImportMetadata/320f3308-ad09-56af-e28e-97a01cf96c9e>
+  ImportedAssetIds:
+    VFXGraph: !<reference> 1601f4f5-4625-446a-b8cc-91d0963c0b72
+  ImporterName: VFXAssetImporter
+  PrimaryAsset: !<reference> 1601f4f5-4625-446a-b8cc-91d0963c0b72
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    AssetLibraryId: 4XtLEEf021W4s4ERs2IZFk
+  AssetDataMap:
+    VFXGraph: !<own> 0824b391-1f4f-47d3-84d3-880eb26be662
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<VFXAssetData/0824b391-1f4f-47d3-84d3-880eb26be662>
+  Mesh: !<reference> 00000000-0000-0000-0000-000000000000
+  SystemPassProperties:
+    39: !<VFXSystemPassProperties/436eb73e-93e9-4f3b-9315-220cecf6b32d>
+      FeedbackProperties:
+        {}
+      SimulateProperties:
+        spawnAmount:
+          typeIdx: 1
+          value: 1000.000000
+        spawnCurveSpeed:
+          typeIdx: 1
+          value: 0.100000
+        volumeRadius:
+          typeIdx: 1
+          value: 20.000000
+        volumeScale:
+          typeIdx: 4
+          value: {x: 1.000000, y: 1.000000, z: 1.000000}
+        volumeLocation:
+          typeIdx: 4
+          value: {x: 1.000000, y: 1.000000, z: 1.000000}
+        sizeRandMin:
+          typeIdx: 1
+          value: 0.500000
+        sizeRandMax:
+          typeIdx: 1
+          value: 1.000000
+        sizeScale:
+          typeIdx: 1
+          value: 5.000000
+        lifeScale:
+          typeIdx: 1
+          value: 1.000000
+        lifeRandMin:
+          typeIdx: 1
+          value: 0.200000
+        lifeRandMax:
+          typeIdx: 1
+          value: 0.300000
+        massScale:
+          typeIdx: 1
+          value: 1.000000
+        forceTargetLocation:
+          typeIdx: 4
+          value: {x: 1.000000, y: 1.000000, z: 1.000000}
+        forceTargetLocationStrength:
+          typeIdx: 1
+          value: 1.000000
+        dirForceDirection:
+          typeIdx: 4
+          value: {x: 1.000000, y: 1.000000, z: 1.000000}
+        dirForceStrength:
+          typeIdx: 1
+          value: 1.000000
+        dragCoefficient:
+          typeIdx: 1
+          value: 1.000000
+        velScale:
+          typeIdx: 4
+          value: {x: 0.000000, y: 0.000000, z: 0.000000}
+        alphaScale:
+          typeIdx: 1
+          value: 1.000000
+        gravityScale:
+          typeIdx: 1
+          value: 1.000000
+        spawnCurve:
+          typeIdx: 10
+          value:
+            id: a7cdcf3e-c7f4-4ab5-b770-1de59f6e5b42
+            curveData: {x: 0.000000, y: 0.000000, z: 0.000000}
+        rotRandMin:
+          typeIdx: 4
+          value: {x: 1.000000, y: 1.000000, z: 1.000000}
+        rotRandMax:
+          typeIdx: 4
+          value: {x: 1.000000, y: 1.000000, z: 1.000000}
+        randRotAmount:
+          typeIdx: 1
+          value: 1.000000
+        colStart:
+          typeIdx: 5
+          value: {x: 1.000000, y: 0.185733, z: 0.573388, w: 1.000000}
+        colEnd:
+          typeIdx: 5
+          value: {x: 0.000000, y: 0.976806, z: 0.000000, w: 1.000000}
+      RenderProperties:
+        baseTex:
+          typeIdx: 9
+          value:
+            id: 6918fbe4-ebab-4a86-bc19-358680badd50
+            sampler:
+              filteringMode: Trilinear
+              wrapModeU: Repeat
+              wrapModeV: Repeat
+              wrapModeW: Repeat
+              borderColor: {x: 0.000000, y: 0.000000, z: 0.000000, w: 0.000000}
+              mipmaps: false
+            type: Texture2D
+        frameCount:
+          typeIdx: 3
+          value: {x: 5.000000, y: 5.000000}
+        maxFrames:
+          typeIdx: 1
+          value: 25.000000
+        flipbookSpeed:
+          typeIdx: 1
+          value: 24.000000
+      FeedbackDefines:
+        []
+      SimulateDefines:
+        - NODE_72_DROPLIST_ITEM 0
+        - Tweak_N95 0
+        - Tweak_N111 0
+        - Tweak_N23 0
+        - Tweak_N239
+        - Tweak_N65
+        - Tweak_N176 0
+        - NODE_216_DROPLIST_ITEM 0
+        - NODE_304_DROPLIST_ITEM 0
+        - NODE_87_DROPLIST_ITEM 3
+        - Tweak_N72 1
+        - Tweak_N14
+        - Tweak_N182 0
+        - enableSpawnCurve
+        - loopCurveAnimation
+      RenderDefines:
+        - Tweak_N212
+        - Tweak_N209
+        - Tweak_N14
+        - Tweak_N239
+        - enableFlipbook
+        - enableBaseTex

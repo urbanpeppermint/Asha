@@ -1,0 +1,64 @@
+- !<AssetImportMetadata/4b510e96-2cce-4eda-9663-5312757f4f86>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> ff0ad8a7-f76d-4ec7-9941-db8a320adec5
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> ff0ad8a7-f76d-4ec7-9941-db8a320adec5
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 83617d9a-3919-4236-af78-ac6e4345bcfd
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/83617d9a-3919-4236-af78-ac6e4345bcfd>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: b390e118-4f11-4962-8d38-aa0e910934af
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    elementSounds: false
+    hoverSound: false
+    loseSound: false
+    opponentAudioSources: false
+    orbAudioComponent: false
+    revealSound: false
+    winSound: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - elementSounds: !<reference.AudioTrackAsset[]>
+        []
+      revealSound: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      winSound: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      loseSound: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      hoverSound: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      orbAudioComponent: !<reference.AudioComponent> 00000000-0000-0000-0000-000000000000
+      opponentAudioSources: !<reference.AudioComponent[]>
+        []
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - "// @input Asset.AudioTrackAsset[] elementSounds = {}"
+    - // @input Asset.AudioTrackAsset revealSound
+    - // @input Asset.AudioTrackAsset winSound
+    - // @input Asset.AudioTrackAsset loseSound
+    - // @input Asset.AudioTrackAsset hoverSound
+    - // @input Component.AudioComponent orbAudioComponent
+    - "// @input Component.AudioComponent[] opponentAudioSources = {}"

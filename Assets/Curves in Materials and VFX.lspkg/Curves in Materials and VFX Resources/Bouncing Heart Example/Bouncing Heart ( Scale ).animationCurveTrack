@@ -1,0 +1,95 @@
+- !<AnimationCurveTrack/87991a58-3610-4678-a1ec-e43d2118cfb4>
+  PackagePath: ""
+  TrackProperties:
+    - Scale
+  Properties:
+    Scale:
+      keyFrames:
+        - time: 0.000000
+          value:
+            data: 0.000000
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.330000, y: 0.330000}
+            outControlWeight: {x: 0.500000, y: 0.500000}
+        - time: 0.075000
+          value:
+            data: 3.369999
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.500000, y: 0.500000}
+            outControlWeight: {x: 0.500000, y: 0.500000}
+        - time: 0.125000
+          value:
+            data: 1.460002
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.500000, y: 0.500000}
+            outControlWeight: {x: 0.500000, y: 0.500000}
+        - time: 0.155000
+          value:
+            data: 2.895000
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.500000, y: 0.500000}
+            outControlWeight: {x: 0.500000, y: 0.500000}
+        - time: 0.200000
+          value:
+            data: 2.120000
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.500000, y: 0.500000}
+            outControlWeight: {x: 0.500000, y: 0.500000}
+        - time: 0.240000
+          value:
+            data: 2.699999
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.500000, y: 0.500000}
+            outControlWeight: {x: 0.500000, y: 0.500000}
+        - time: 0.277000
+          value:
+            data: 2.500000
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.500000, y: 0.500000}
+            outControlWeight: {x: 0.344116, y: 0.395555}
+        - time: 0.916000
+          value:
+            data: 2.500000
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.655884, y: 0.604445}
+            outControlWeight: {x: 0.500000, y: 0.500000}
+        - time: 0.945463
+          value:
+            data: 2.994092
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.500000, y: 0.500000}
+            outControlWeight: {x: 0.500000, y: 0.500000}
+        - time: 0.970000
+          value:
+            data: 2.489999
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.500000, y: 0.500000}
+            outControlWeight: {x: 0.000006, y: 0.067675}
+        - time: 1.000000
+          value:
+            data: 0.000000
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.904418, y: 0.985012}
+            outControlWeight: {x: 0.330000, y: 0.330000}

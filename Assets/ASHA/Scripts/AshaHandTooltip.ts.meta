@@ -27,6 +27,7 @@
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
     bodyText: false
+    followOffsetY: false
     titleText: false
     tooltipRoot: false
   ScriptTypesHidden:
@@ -41,6 +42,7 @@
     - tooltipRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       titleText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       bodyText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      followOffsetY: 0.120000
   ScriptTypes:
     -
       {}
@@ -48,3 +50,4 @@
     - // @input SceneObject tooltipRoot
     - // @input SceneObject titleText
     - // @input SceneObject bodyText
+    - // @input float followOffsetY = 0.12

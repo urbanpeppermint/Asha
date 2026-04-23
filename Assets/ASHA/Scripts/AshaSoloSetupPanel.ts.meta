@@ -26,6 +26,8 @@
   ExportUid: 00000000-0000-0000-0000-000000000000
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
+    aiRow: false
+    beginButton: false
     gameManager: false
     panelRoot: false
   ScriptTypesHidden:
@@ -39,9 +41,13 @@
   DefaultScriptInputs:
     - gameManager: !<MappingBased.AssignableType> 00000000-0000-0000-0000-000000000000
       panelRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      aiRow: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      beginButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
     -
       {}
   InputLines:
     - // @input AssignableType gameManager
     - // @input SceneObject panelRoot
+    - // @input SceneObject aiRow
+    - // @input SceneObject beginButton

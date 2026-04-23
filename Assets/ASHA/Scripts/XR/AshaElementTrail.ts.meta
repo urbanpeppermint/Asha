@@ -1,0 +1,48 @@
+- !<AssetImportMetadata/79bb9d65-f7a0-42bb-bf19-6c1a074f789d>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> 4b9fd8ff-e1f0-4766-acad-dd91a7c156c5
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> 4b9fd8ff-e1f0-4766-acad-dd91a7c156c5
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 3ad46326-0599-4322-9362-63dd3fb341bd
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/3ad46326-0599-4322-9362-63dd3fb341bd>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: ef78bdaf-8443-4087-8c56-671ca153b3e6
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    dominantHand: false
+    trailTemplates: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - trailTemplates: !<reference.SceneObject[]>
+        []
+      dominantHand: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - "// @input SceneObject[] trailTemplates = {}"
+    - // @input SceneObject dominantHand

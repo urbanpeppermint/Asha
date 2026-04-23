@@ -1,0 +1,37 @@
+- !<NativePackageDescriptor/e7ffce9c-2637-42ae-8458-4b1bcc5df728>
+  PackagePath: ""
+  StudioVersion:
+    major: 5
+    minor: 15
+    patch: 0
+    build: 25101318
+    type: Unset
+    buildFlavor: ""
+    timestamp: 0
+    commit: ""
+  Description: "Trail VFX Transform your virtual landscapes with this captivating Trail VFX asset. Watch as dazzling trails of light and color effortlessly follow the movement, leaving a mesmerizing path in their wake. Perfect for accentuating motion, magic, or futuristic elements, this visual effect adds an extra layer of enchantment and excitement to your immersive experiences."
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  VersionMajor: 1
+  VersionMinor: 0
+  VersionPatch: 0
+  UpdateCheckpoint: 76
+  ExportUid: 7f06726c-e5ac-419a-9a2d-cb74ce03465e
+  ComponentUid: 76255845-8f03-44ef-9cb7-8431d02cad7a
+  PackagePolicy: CanBeUnpackedTransparent
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  Instantiable: !<reference> 00000000-0000-0000-0000-000000000000
+  AssetLibraryDependencyStructure: !<AssetLibraryDependencyStructure>
+    Name: ""
+    AssetId: ""
+    Hash: ""
+    Version:
+      major: 0
+      minor: 0
+      patch: 0
+      build: 0

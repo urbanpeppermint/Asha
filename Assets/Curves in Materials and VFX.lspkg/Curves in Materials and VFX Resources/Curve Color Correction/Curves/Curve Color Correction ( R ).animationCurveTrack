@@ -1,0 +1,23 @@
+- !<AnimationCurveTrack/ad63e9db-fe0d-4688-a50a-d7c6290ddb73>
+  PackagePath: ""
+  TrackProperties:
+    - R Channel
+  Properties:
+    R Channel:
+      keyFrames:
+        - time: 0.000000
+          value:
+            data: 0.130000
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.330000, y: 0.330000}
+            outControlWeight: {x: 0.504273, y: 0.000483}
+        - time: 1.000000
+          value:
+            data: 1.000000
+            leftTangent: Free
+            rightTangent: Free
+            weightedMode: None
+            inControlWeight: {x: 0.687782, y: 0.994495}
+            outControlWeight: {x: 0.330000, y: 0.330000}

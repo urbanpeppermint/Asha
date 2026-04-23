@@ -1,0 +1,196 @@
+- !<ObjectPrefab/dbd9f32c-9671-485e-b1e3-8c475c5b8184>
+  PackagePath: ""
+  objects:
+    - !<own> 5f0e48f2-2838-4844-a547-c043496b5c23
+  LazyLoading: false
+  RetainAssets: true
+- !<SceneObject/04f869f2-db1d-450d-9f45-044310361446>
+  PrefabRemaps:
+    []
+  Name: Bouncing Heart VFX Example
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 20.691080, y: 45.454056, z: -23.162888}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> bfdf74bb-1f5b-4549-af05-7f82d80f3a40
+- !<RenderMeshVisual/0791b789-ec57-461d-8c2c-9c5466d25e0d>
+  PrefabRemaps:
+    []
+  Name: Render Mesh Visual
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> ad2564a8-c337-4bbb-b0ae-3242a64387b5
+  Mesh: !<reference> 5f0e7f29-6fd7-4d5d-87fe-0ff8a17992a8
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<VFXComponent/0f320c2e-d973-47c4-92cf-6750d1ed542e>
+  PrefabRemaps:
+    []
+  Name: VFX Component
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  VFXAsset: !<reference> 1601f4f5-4625-446a-b8cc-91d0963c0b72
+- !<SceneObject/16610279-4c8e-4728-bb61-0b106f757017>
+  PrefabRemaps:
+    []
+  Name: Sparkle Spawn VFX Example
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 15.307917, y: 1.916981, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 0f320c2e-d973-47c4-92cf-6750d1ed542e
+- !<RenderMeshVisual/1cba603d-04b1-4d0a-b8c8-d0e2cc25d52b>
+  PrefabRemaps:
+    []
+  Name: Render Mesh Visual
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 11b17662-683b-4896-8f7a-057cb1e151d3
+  Mesh: !<reference> a7c4ca9b-bb86-42b1-9c56-5b3c0eb66270
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/4144aedf-a013-41c3-b63e-2265e3c48d4c>
+  PrefabRemaps:
+    []
+  Name: Curve Color Correction Example
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: -51.075867, y: 111.088669, z: -111.713623}
+    Rotation: {x: 90.000000, y: -0.000000, z: 0.000000}
+    Scale: {x: 61.496525, y: 285.559998, z: 108.925323}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 0791b789-ec57-461d-8c2c-9c5466d25e0d
+- !<RenderMeshVisual/51875c79-71e6-4c79-92c0-31ffc506e0dd>
+  PrefabRemaps:
+    []
+  Name: Render Mesh Visual
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 621ecb34-7a42-4851-b1e5-3fb92af2fb86
+  Mesh: !<reference> d95b9828-2414-41db-88e9-1cd8b43a94fd
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/5f0e48f2-2838-4844-a547-c043496b5c23>
+  PrefabRemaps:
+    - 04f869f2-db1d-450d-9f45-044310361446: 04f869f2-db1d-450d-60ba-fbbcefc9ebb9
+    - 0791b789-ec57-461d-8c2c-9c5466d25e0d: 0791b789-ec57-461d-73d3-63ab992da1f2
+    - 0f320c2e-d973-47c4-92cf-6750d1ed542e: 0f320c2e-d973-47c4-6d30-98af2e12abd1
+    - 16610279-4c8e-4728-bb61-0b106f757017: 16610279-4c8e-4728-449e-f4ef908a8fe8
+    - 1cba603d-04b1-4d0a-b8c8-d0e2cc25d52b: 1cba603d-04b1-4d0a-4737-2f1d33da2ad4
+    - 4144aedf-a013-41c3-b63e-2265e3c48d4c: 4144aedf-a013-41c3-49c1-dd9a1c3b72b3
+    - 51875c79-71e6-4c79-92c0-31ffc506e0dd: 51875c79-71e6-4c79-6d3f-ce003af91f22
+    - 5f0e48f2-2838-4844-a547-c043496b5c23: 5f0e48f2-2838-4844-5ab8-3fbcb694a3dc
+    - 8a2a419a-3257-4949-a2bf-b72684d805c3: 8a2a419a-3257-4949-5d40-48d97b27fa3c
+    - 9a36aa4c-8da7-4800-ba4b-3c4a4310ef97: 9a36aa4c-8da7-4800-45b4-c3b5bcef1068
+    - bfdf74bb-1f5b-4549-af05-7f82d80f3a40: bfdf74bb-1f5b-4549-50fa-807d27f0c5bf
+  Name: Curves in Materials and VFX__PLACE_IN_SCENE
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 9a36aa4c-8da7-4800-ba4b-3c4a4310ef97
+    - !<own> 8a2a419a-3257-4949-a2bf-b72684d805c3
+    - !<own> 04f869f2-db1d-450d-9f45-044310361446
+    - !<own> 16610279-4c8e-4728-bb61-0b106f757017
+    - !<own> 4144aedf-a013-41c3-b63e-2265e3c48d4c
+  Components:
+    []
+- !<SceneObject/8a2a419a-3257-4949-a2bf-b72684d805c3>
+  PrefabRemaps:
+    []
+  Name: Fabric Vertex Animation Example
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: -2.475281, y: -566.281982, z: -651.801758}
+    Rotation: {x: -28.591282, y: -63.467499, z: 17.272501}
+    Scale: {x: 100.000000, y: 100.000000, z: 99.999992}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 1cba603d-04b1-4d0a-b8c8-d0e2cc25d52b
+- !<SceneObject/9a36aa4c-8da7-4800-ba4b-3c4a4310ef97>
+  PrefabRemaps:
+    []
+  Name: Scaling Blocks Example
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: -38.011250, y: -16.732079, z: -102.767395}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 10.000000, y: 10.000000, z: 10.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 51875c79-71e6-4c79-92c0-31ffc506e0dd
+- !<VFXComponent/bfdf74bb-1f5b-4549-af05-7f82d80f3a40>
+  PrefabRemaps:
+    []
+  Name: VFX Component
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  VFXAsset: !<reference> 89699c69-8013-4265-93bc-c032724b385b
