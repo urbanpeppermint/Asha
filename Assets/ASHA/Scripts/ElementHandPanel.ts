@@ -10,6 +10,7 @@ export class ElementHandPanel extends BaseScriptComponent {
   @input gameManager: AshaGameManager
 
   @input('SceneObject[]') buttonObjects: SceneObject[] = []
+  @input('SceneObject[]') cardFaceObjects: SceneObject[] = []
   @input buttonParent: SceneObject
   @input arenaOrbScript: ScriptComponent
   @input vfxScript: ScriptComponent
@@ -17,9 +18,12 @@ export class ElementHandPanel extends BaseScriptComponent {
 
   private readonly log = new SyncKitLogger(TAG)
   private panelEnabled = false
+  private activeFace = -1
+  private lockedFace = -1
 
   onAwake() {
     this.setEnabled(false)
+    this.hideAllFaces()
     if (this.gameManager) this.gameManager.registerHandPanel(this)
     this.createEvent('OnStartEvent').bind(() => this.wireHoverFromButtons())
     this.log.i('ElementHandPanel ready')
@@ -53,8 +57,20 @@ export class ElementHandPanel extends BaseScriptComponent {
   }
 
   public setEnabled(enabled: boolean) {
+    const wasEnabled = this.panelEnabled
     this.panelEnabled = enabled
     if (this.buttonParent) this.buttonParent.enabled = enabled
+    // New round start: clear previously locked face.
+    if (enabled && !wasEnabled) {
+      this.lockedFace = -1
+      this.hideAllFaces()
+    }
+    // Panel hides right after pick; keep locked face visible until round resolves.
+    if (!enabled && this.lockedFace >= 0) {
+      this.showFace(this.lockedFace, true)
+    } else if (!enabled) {
+      this.hideAllFaces()
+    }
     // Keep child button objects untouched so SIK temporary colliders survive
     // across round transitions.
     this.log.i(`Panel ${enabled ? 'shown' : 'hidden'}`)
@@ -73,6 +89,8 @@ export class ElementHandPanel extends BaseScriptComponent {
   public hoverVayu()      { this.showTip(3, this.buttonObjects[3]) }
   public hoverKhshathra() { this.showTip(4, this.buttonObjects[4]) }
   public hoverEnd() {
+    if (this.lockedFace >= 0) this.showFace(this.lockedFace, true)
+    else this.showFace(-1)
     const tip = this.tooltipScript as any
     tip?.setFollowAnchor?.(null)
     tip?.hide?.()
@@ -84,6 +102,8 @@ export class ElementHandPanel extends BaseScriptComponent {
 
     this.log.i(`Picked element ${elementId}`)
     this.gameManager.submitChoice(elementId)
+    this.lockedFace = elementId
+    this.showFace(elementId, true)
 
     if (this.arenaOrbScript) (this.arenaOrbScript as any).onChoiceSelected?.(elementId)
     if (this.vfxScript) (this.vfxScript as any).playSelection?.(elementId)
@@ -94,8 +114,23 @@ export class ElementHandPanel extends BaseScriptComponent {
 
   private showTip(elementId: number, anchor?: SceneObject) {
     if (!this.panelEnabled || !this.tooltipScript) return
+    if (this.lockedFace < 0) this.showFace(elementId)
     const tip = this.tooltipScript as any
     tip?.setFollowAnchor?.(anchor ?? null)
     tip?.showForElement?.(elementId, anchor ?? null)
+  }
+
+  private hideAllFaces() {
+    this.activeFace = -1
+    for (const o of this.cardFaceObjects) if (o) o.enabled = false
+  }
+
+  private showFace(elementId: number, forceWhenPanelHidden: boolean = false) {
+    if (elementId === this.activeFace) return
+    this.activeFace = elementId
+    for (let i = 0; i < this.cardFaceObjects.length; i++) {
+      const o = this.cardFaceObjects[i]
+      if (o) o.enabled = (this.panelEnabled || forceWhenPanelHidden) && i === elementId
+    }
   }
 }

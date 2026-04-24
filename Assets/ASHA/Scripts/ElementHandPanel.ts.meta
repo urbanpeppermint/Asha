@@ -29,6 +29,7 @@
     arenaOrbScript: false
     buttonObjects: false
     buttonParent: false
+    cardFaceObjects: false
     gameManager: false
     tooltipScript: false
     vfxScript: false
@@ -44,6 +45,8 @@
     - gameManager: !<MappingBased.AssignableType> 00000000-0000-0000-0000-000000000000
       buttonObjects: !<reference.SceneObject[]>
         []
+      cardFaceObjects: !<reference.SceneObject[]>
+        []
       buttonParent: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       arenaOrbScript: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
       vfxScript: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
@@ -54,6 +57,7 @@
   InputLines:
     - // @input AssignableType gameManager
     - "// @input SceneObject[] buttonObjects = {}"
+    - "// @input SceneObject[] cardFaceObjects = {}"
     - // @input SceneObject buttonParent
     - // @input Component.ScriptComponent arenaOrbScript
     - // @input Component.ScriptComponent vfxScript

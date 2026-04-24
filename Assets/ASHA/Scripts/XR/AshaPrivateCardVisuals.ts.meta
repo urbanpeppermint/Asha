@@ -1,0 +1,68 @@
+- !<AssetImportMetadata/e552ec7a-f7e4-48ae-9dee-bad033403529>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> c94fd1df-3470-4418-83d5-01ccee601f53
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> c94fd1df-3470-4418-83d5-01ccee601f53
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 332d4974-2a2d-4c57-808f-0589452dfacd
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/332d4974-2a2d-4c57-808f-0589452dfacd>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: e120e350-7411-427c-9370-51080aa6ce44
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    backAnchors: false
+    floatAmplitudeCm: false
+    floatSpeedHz: false
+    gameManager: false
+    hideWhenAllChosen: false
+    keepLocalFaceAfterChoice: false
+    localFaceObjects: false
+    opponentBackObjects: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - gameManager: !<MappingBased.AssignableType> 00000000-0000-0000-0000-000000000000
+      localFaceObjects: !<reference.SceneObject[]>
+        []
+      opponentBackObjects: !<reference.SceneObject[]>
+        []
+      backAnchors: !<reference.SceneObject[]>
+        []
+      hideWhenAllChosen: true
+      keepLocalFaceAfterChoice: true
+      floatAmplitudeCm: 2.500000
+      floatSpeedHz: 0.800000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input AssignableType gameManager
+    - "// @input SceneObject[] localFaceObjects = {}"
+    - "// @input SceneObject[] opponentBackObjects = {}"
+    - "// @input SceneObject[] backAnchors = {}"
+    - // @input bool hideWhenAllChosen = true
+    - // @input bool keepLocalFaceAfterChoice = true
+    - // @input float floatAmplitudeCm = 2.5
+    - // @input float floatSpeedHz = 0.8

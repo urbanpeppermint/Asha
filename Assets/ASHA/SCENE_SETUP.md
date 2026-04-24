@@ -104,6 +104,7 @@ or any scene object named `StartMenu`.
 |-------------------|--------------------------------|
 | gameManager       | → ASHA_GameManager             |
 | buttonObjects     | → [AtarBtn, AbanBtn, ZamBtn, VayuBtn, KshathraBtn] |
+| cardFaceObjects   | → [AtarFace, AbanFace, ZamFace, VayuFace, KshathraFace] (optional local PNG face visuals) |
 | buttonParent      | → ASHA_HandPanel (itself)      |
 | arenaOrbScript    | → (optional) ASHA_ArenaOrb's script component |
 | vfxScript         | → (optional) ASHA_VFX's script component |
@@ -204,6 +205,7 @@ EnableOnReady
 ├── ElementTrail              ← AshaElementTrail
 ├── XrCoordinator             ← AshaXrCoordinator
 ├── XrPickFeedback            ← AshaXrPickFeedback
+├── PrivateCardVisuals        ← AshaPrivateCardVisuals
 ├── ASHA_HandPanel            ← existing ElementHandPanel + buttons
 └── ASHA_ArenaOrb
     └── OrbVfx                ← AshaOrbVfx
@@ -323,6 +325,23 @@ Keep existing `ElementHandPanel.pick...` callbacks. Add one extra callback per b
 
 This gives local pick sound + local hand trail without touching `ElementHandPanel.ts`.
 
+#### AshaPrivateCardVisuals
+
+| Field | Drag from scene |
+|------|------------------|
+| `gameManager` | `ASHA_GameManager` |
+| `localFaceObjects[0..4]` | local card face objects attached to element buttons (ATAR..KHSHATHRA order) |
+| `opponentBackObjects` | floating back-of-card objects (one per visible opponent slot) |
+| `backAnchors` | optional anchor objects for each opponent back |
+| `hideWhenAllChosen` | true (recommended) |
+| `keepLocalFaceAfterChoice` | true (recommended; keep face shown until all players are ready) |
+| `floatAmplitudeCm` / `floatSpeedHz` | tune back-card floating animation |
+
+Behavior:
+- in `choosing`, local faces are visible only to local user (and can stay visible after local pick)
+- unresolved non-local slots show only card backs (floating animation)
+- after all slots submit choices, both faces and back animations hide
+
 ### XR Verification Order
 
 1. World placement: look at table/floor for 1 second; arena should place from World Query hit, else fallback.
@@ -357,3 +376,4 @@ This gives local pick sound + local hand trail without touching `ElementHandPane
 | XR/AshaHandAura.ts       | Hover glow near hand |
 | XR/AshaXrCoordinator.ts  | Non-invasive XR event orchestration |
 | XR/AshaXrPickFeedback.ts | Extra per-button feedback callbacks |
+| XR/AshaPrivateCardVisuals.ts | Local card faces + opponent back-only visuals |
