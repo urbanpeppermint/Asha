@@ -36,7 +36,7 @@
 
 | # | Name | Element | Glyph | Beats | Loses |
 |---|------|---------|:---:|:---:|:---:|
-| 0 | **ATAR** — सacred Fire | Fire | 🔥 | ZAM, VAYU | ABAN, KHSHATHRA |
+| 0 | **ATAR** — Sacred Fire | Fire | 🔥 | ZAM, VAYU | ABAN, KHSHATHRA |
 | 1 | **ABAN** — the Waters | Water | 💧 | ATAR, KHSHATHRA | ZAM, VAYU |
 | 2 | **ZAM** — the Earth | Earth | 🪨 | ABAN, VAYU | ATAR, KHSHATHRA |
 | 3 | **VAYU** — the Wind | Wind | 🌪 | ATAR, ABAN | ZAM, KHSHATHRA |
@@ -64,23 +64,25 @@ Two or more Spectacles wearers join the same session. The host selects the round
 
 ---
 
-## ✦ XR Layers
+## ✦ XR & polish layers *(actually used in this project)*
 
-ASHA's core game logic is platform‑agnostic. Layered on top is a stack of strictly **additive XR enhancements** designed for Spectacles' display, audio, and hand tracking:
+Core rules live in `AshaGameManager` + `AshaResolver`. Everything below is **additive**: wire it in the scene or leave it unwired — the round still resolves.
 
-| Layer | What it does |
+| Script | What it does in practice |
 |---|---|
-| `AshaArenaOrb` | The luminous central orb that pulses with each round |
-| `AshaWorldPlacement` | Optional surface re‑placement ("Place Arena") with shared or local‑only sync |
-| `AshaXrCoordinator` | Bridges core game state with XR layers without modifying core logic |
-| `AshaAudio` | Spatial reveal / pick / win cues |
-| `AshaOrbVfx` | Element‑coloured reveal burst from the orb |
-| `AshaElementTrail` | Per‑pick element trail from hand → orb |
-| `AshaHandAura` | Hover glow over each card while choosing |
-| `AshaHandTrailVfx` | Optional hand particle trail tinted by chosen element / multi‑colour pre‑reveal |
-| `AshaPrivateCardVisuals` | *(deprecated — `ElementHandPanel` now owns all card visuals)* |
+| `AshaXrCoordinator` | Listens to phase / triggers and fans out to other XR scripts (host + client safe via polling where needed). |
+| `AshaWorldPlacement` | Optional **World Query** hit‑test flow: user taps **Place Arena**, then pinch‑release to commit; arena can stay at scene default or move to a surface; **local‑only** or **synced** placement (inspector toggle). |
+| `AshaAudio` | `AudioComponent` one‑shots for reveal / pick / hover when tracks are assigned. |
+| `AshaOrbVfx` | Element‑tinted orb burst on reveal (wired from coordinator). |
+| `AshaVfx` | Enables/disables **SceneObject** prefabs for short selection + reveal bursts (`selectionFxDurationSec` defaults to 3s for local pick feedback). |
+| `AshaElementTrail` | After a pick, clones a **trail template** `SceneObject` per element and parents it to a **dominant hand** anchor — simple follow‑transform, no custom shader in code. |
+| `AshaHandAura` | Hover feedback while cards are interactable (SIK `Interactable` hover). |
+| `AshaXrPickFeedback` | Extra local feedback on pick (wired from XR layer, not core rules). |
+| `AshaArenaOrb` | Orb text / child mesh visibility around phases and choices. |
+| `AshaHandTrailVfx` | **Scaffold only** — helper for optional GPU particle trails on hand trackers; not part of the default shipped gameplay loop unless you wire templates in Lens Studio. |
+| `AshaPrivateCardVisuals` | **Deprecated no‑op** — card faces / backs / flip / reveal are owned by `ElementHandPanel` only (kept so old scenes do not break). |
 
-The principle: the game is fully playable without any XR layer. Each layer can be toggled or unwired and the experience still resolves correctly.
+**Not used in ASHA today:** Bitmoji, `GestureModule` (SIK handles pinch / interactables), Snap Cloud ladders, voice ML, or custom shaders beyond whatever you put inside assigned prefabs / materials in the scene.
 
 ---
 
@@ -112,16 +114,16 @@ This avoids per‑player `SyncEntity` complexity entirely — late joiners hydra
 
 ---
 
-## ✦ Tech Stack
+## ✦ Tech stack *(what this repo actually calls)*
 
-- **[Lens Studio](https://ar.snap.com/lens-studio) 5.15+** — authoring environment
-- **[Spectacles](https://www.spectacles.com/) (2024)** — target device
-- **[Spectacles Interaction Kit](https://developers.snap.com/spectacles/about-spectacles-features/spectacles-interaction-kit/getting-started) 0.15** — `PinchButton`, `Interactable`, hover wiring
-- **[Spectacles Sync Kit](https://developers.snap.com/spectacles/about-spectacles-frameworks/spectacles-sync-kit) 1.3** — `SyncEntity`, `StorageProperty`, `SessionController`
-- **[World Query](https://developers.snap.com/spectacles/about-spectacles-features/apis/world-query)** — optional surface placement
-- **[GestureModule](https://developers.snap.com/spectacles/about-spectacles-features/apis/gesture-module)** — pinch / targeting events
-- **[GPU Particles](https://developers.snap.com/lens-studio/features/graphics/particles/gpu-particles/gpu-particles-templates/particles)** — element trails and reveal bursts
-- **TypeScript (strict)** with `BaseScriptComponent` + `@component` decorators
+- **[Lens Studio](https://ar.snap.com/lens-studio) 5.15+** — project + TypeScript components
+- **[Spectacles](https://www.spectacles.com/) (2024)** — primary target hardware
+- **[Spectacles Interaction Kit](https://developers.snap.com/spectacles/about-spectacles-features/spectacles-interaction-kit/getting-started) 0.15** — `PinchButton`, `Interactable`, hover callbacks for cards and UI
+- **[Spectacles Sync Kit](https://developers.snap.com/spectacles/about-spectacles-frameworks/spectacles-sync-kit) 1.3** — `SyncEntity`, `StorageProperty`, `SessionController`, colocated session flow
+- **[World Query / HitTestSession](https://developers.snap.com/spectacles/about-spectacles-features/apis/world-query)** — optional arena placement (`AshaWorldPlacement`); semantic classification is optional and guarded because it needs **Experimental APIs** in project settings
+- **Built‑in Lens Studio** — `AudioComponent`, `Text`, `SceneObject` enable/disable, `DelayedCallbackEvent`, `UpdateEvent`, `Transform` lerps for card flip / winner pulse
+
+You can still drop **GPU particle templates** or richer VFX under the assigned prefabs in the scene — the scripts only toggle objects and positions; they do not author particle graphs in TypeScript.
 
 ---
 
@@ -191,14 +193,42 @@ Assets/
 
 ---
 
-## ✦ Roadmap
+## ✦ Pain points *(building connected ritual AR is hard)*
 
-- [ ] Snapchat **Bitmoji** avatars per slot (currently `displayName` text labels)
-- [ ] Persistent ladder via Snap Cloud edge functions
-- [ ] Voice‑activated element invocation ("Atar!", "Aban!" ...)
-- [ ] Spatial audio mix tied to round momentum
-- [ ] Five‑colour rainbow pre‑reveal hand trail (groundwork in `AshaHandTrailVfx`)
-- [ ] On‑device persistent player nameplate
+- **Two owners, one mesh.** When two scripts toggled the same face/back objects (`AshaPrivateCardVisuals` vs `ElementHandPanel`), reveal frames fought every `UpdateEvent` — labels looked right while quads went blank. **Lesson:** one script owns each visual channel; deprecate the rest loudly.
+- **Host writes ≠ remote callbacks.** Storage triggers incremented on the host do not always fire `onRemoteChange` locally — polling `revealTrig` / `goTrig` from `AshaXrCoordinator` keeps SFX and orb VFX consistent for everyone.
+- **Phase edges are sharp.** Entering `reveal` a frame before all `cProps` settle produced “unresolved choice” guards and empty battle logs on clients — explicit validation + synced `roundLogProp` from the host fixed the worst of it.
+- **World Query is a product decision.** Hit‑testing is powerful but easy to trigger by accident; button‑gated placement (`Place Arena`) + optional sync keeps sessions from “teleporting” the table without intent.
+- **Inspector surface area.** Five elements × faces × backs × labels × buttons × XR hooks is a lot of wiring — `SCENE_SETUP.md` is mandatory documentation, not optional reading.
+- **Preview ≠ Spectacles.** Dual Preview simulates sync well; hand comfort, brightness, and world mesh still deserve on‑device passes before you call a build “done.”
+
+---
+
+## ✦ Future update ideas *(none of these are promised — pick what resonates)*
+
+**Identity & social**
+- **Bitmoji or 3D busts per slot** — *maybe.* Today names come from `UserInfo.displayName` + **Magi N** for bots; avatars would read instantly in MP but add asset weight, sync questions, and privacy review. Worth a design spike, not a commitment.
+
+**Combat theatre (no new rules — pure spectacle)**  
+Keep the same 5×5 matrix; add a **“strike pass”** only after reveal resolves:
+- **Winner’s gauntlet** — for ~1–2s, the winning element’s colour runs along the **dominant‑hand mesh** (ribbon, mesh trail, or GPU ribbon) as a “seal of Asha” — like a lightsaber ignition beat, not damage.
+- **Losing elements flicker out** — non‑winning chosen cards get a quick ember‑dissolve or wind‑shear shader on the **back** only, so faces stay readable for the log.
+- **Final‑round crescendo** — on `round === totalRounds`, orb shader + audio stinger intensify once (no slower gameplay, just one unmistakable ritual moment).
+
+**Hands as instruments**
+- Finish **`AshaHandTrailVfx`** with real GPU templates: **rainbow** while everyone is still choosing → **solid element colour** after you lock → **hidden** at reveal for non‑locals (already sketched in code comments).
+- **Two‑hand chord** (wild idea): optional house rule where holding two different element anchors boosts a tie into a “harmony” mini‑animation — would need explicit UX + host toggle.
+
+**Session & persistence**
+- **Remember the table** — optional spatial anchor for arena root between launches (same room, next day).
+- **Spectator join** — phone or third Spectacles as read‑only orb + log (no `submitChoice` path).
+
+**Audio & voice**
+- **Stinger mix per element** — subtle leitmotif on pick + different resolve chord on draw vs win (still one `AudioComponent`, smarter playlists).
+- **Voice cue toggle** — optional one‑shot line per element on pick (localization + consent heavy; behind a setting).
+
+**Meta**
+- **Public ladder / seasons** — Snap Cloud or edge functions; only if you want ranked Asha as a live service (scope creep warning).
 
 ---
 
