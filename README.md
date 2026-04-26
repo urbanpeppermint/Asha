@@ -20,7 +20,7 @@
 
 ## ✦ What it is
 
-**ASHA** is built **for Spectacles**: colocated **Connected Lens** sessions, hand‑first UI (SIK), five elemental “cards” (**ATAR · ABAN · ZAM · VAYU · KHSHATHRA**), a shared **Arena Orb**, solo vs **Magi** bots, and optional world placement + XR polish layers. Everything is authored in **Lens Studio** with TypeScript.
+**ASHA** is built **for Spectacles**: colocated **Connected Lens** sessions, hand‑first UI (SIK), five elemental “cards” (**ATAR · ABAN · ZAM · VAYU · KHSHATHRA**), a shared **Arena Orb**, solo vs **Magi** bots, **procedural D‑minor ambient music**, and optional world placement + XR polish layers. Game logic uses **TypeScript**; the ambient engine is a **Lens Studio script** (`AshaProceduralAudio.js`) driving procedural audio output.
 
 ---
 
@@ -53,6 +53,17 @@ Two or more Spectacles wearers join the same session. The host selects the round
 3. **Resolve** — the Arena Orb counts rhythm, beats, and ties using the cosmic matrix.
 4. **Reveal** — every chosen card returns to face, labelled with its chooser's name. Winners pulse in a heartbeat rhythm.
 5. **Continue** — the next round, or the final scoreboard with a return‑to‑setup button.
+
+### Procedural ambient soundtrack
+
+ASHA includes **generative ambient music** (separate from one‑shot SFX in `AshaAudio`). Implemented in **`Assets/AshaProceduralAudio.js`**:
+
+- **Evolving phrases** — **16‑step** melodic patterns in **D minor**; each bar picks pitches from a fixed scale. At phrase boundaries the line **mutates** (full refresh or single‑step tweak), so the bed rarely loops the same way twice — *Markov‑style* randomness without shipping long audio assets.
+- **Real‑time PCM** — **`AudioOutputProvider`** on a dedicated **`AudioTrackAsset`**: each frame fills a **`Float32Array`** buffer and **`enqueueAudioFrame`** streams mono **44.1 kHz** audio to the device (**~zero KB** musical asset weight, fast lens load).
+- **Spectacles‑friendly synthesis** — **Phase accumulation** per sample keeps oscillators continuous across buffers (avoids zipper noise / static). **Smoothed envelope** (~**20 ms** attack into decay) reduces speaker **clicks** on note changes. **Pure sine** oscillators keep the spectrum **mid‑range–leaning** so playback stays intelligible on **Spectacles integrated speakers** without heavy sub‑bass rumble.
+- **SIK toggle** — Public **`toggleMusic(isOn?)`** on the script API (and `script.api.toggleMusic`) so a spatial **SIK `ToggleButton`** can turn the bed on or off in‑lens.
+
+Runtime buffer footprint stays **small** (under **~1 MB** for frame buffers and state).
 
 ---
 
@@ -113,7 +124,7 @@ This avoids per‑player `SyncEntity` complexity entirely — late joiners hydra
 - **[Spectacles Interaction Kit](https://developers.snap.com/spectacles/about-spectacles-features/spectacles-interaction-kit/getting-started) 0.15** — `PinchButton`, `Interactable`, hover callbacks for cards and UI
 - **[Spectacles Sync Kit](https://developers.snap.com/spectacles/about-spectacles-frameworks/spectacles-sync-kit) 1.3** — `SyncEntity`, `StorageProperty`, `SessionController`, colocated session flow
 - **[World Query / HitTestSession](https://developers.snap.com/spectacles/about-spectacles-features/apis/world-query)** — optional arena placement (`AshaWorldPlacement`); semantic classification is optional and guarded because it needs **Experimental APIs** in project settings
-- **Built‑in Lens Studio** — `AudioComponent`, `Text`, `SceneObject` enable/disable, `DelayedCallbackEvent`, `UpdateEvent`, `Transform` lerps for card flip / winner pulse
+- **Built‑in Lens Studio** — `AudioComponent`, **`AudioOutputProvider`** (procedural `Float32Array` → `enqueueAudioFrame`), `Text`, `SceneObject` enable/disable, `DelayedCallbackEvent`, `UpdateEvent`, `Transform` lerps for card flip / winner pulse
 
 You can still drop **GPU particle templates** or richer VFX under the assigned prefabs in the scene — the scripts only toggle objects and positions; they do not author particle graphs in TypeScript.
 
@@ -144,6 +155,7 @@ The repo ships with required packages (SIK, Sync Kit) under `Packages/` so the p
 ### Project Layout
 ```
 Assets/
+├── AshaProceduralAudio.js          ← generative D-minor ambient bed (PCM → AudioOutputProvider)
 └── ASHA/
     ├── Scripts/
     │   ├── AshaGameManager.ts        ← core game state + sync
