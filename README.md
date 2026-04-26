@@ -2,33 +2,25 @@
 
 # ✦ ASHA ✦
 
-### *A Spectacles AR ritual of Truth, Fire, and Sacred Order.*
-
-**Inspired by the *Jashan of Asha Vahishta* — the radiant Amesha Spenta of Truth, Purity, Divine Order, and the sacred rhythm of well-being that holds creation together.**
+### *A connected‑lens AR game for Snap Spectacles*
 
 [![Lens Studio](https://img.shields.io/badge/Lens%20Studio-5.15-FFFC00?logo=snapchat&logoColor=black)](https://ar.snap.com/lens-studio)
 [![Spectacles](https://img.shields.io/badge/Spectacles-2024-000?logo=snapchat&logoColor=white)](https://www.spectacles.com/)
 [![SIK](https://img.shields.io/badge/SpectaclesInteractionKit-0.15-7A5FFF)](https://developers.snap.com/spectacles/about-spectacles-features/spectacles-interaction-kit/getting-started)
 [![SyncKit](https://img.shields.io/badge/Spectacles%20Sync%20Kit-1.3-3DDBD9)](https://developers.snap.com/spectacles/about-spectacles-frameworks/spectacles-sync-kit)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](#)
-[![License](https://img.shields.io/badge/license-MIT-success)](#license)
+
+**Inspiration (tone only):** naming and mood nod to **Asha Vahishta** and the **sacred fire (Atar)** in Zoroastrian tradition — truth, order, and light as a through‑line. The product is a **Spectacles** multiplayer / solo element game, not religious instruction.
+
+**Repository:** reference for the **Spectacles team** (build review, handoff, internal docs). **Not** an open‑source or public redistribution release — no license to fork or ship outside Snap is granted here unless explicitly agreed in writing.
 
 </div>
 
 ---
 
-## ✦ The Vision
+## ✦ What it is
 
-> Asha is not merely *truth* in the simple sense.
-> It is the divine force of **rightness, harmony, justice, and order** —
-> the holy pattern that binds all things together and gives the world its meaning, balance, and life.
-> It is the rhythm by which creation flourishes.
->
-> Asha Vahishta is bound to **Atar**, the sacred fire, because fire reveals, purifies, illuminates, and makes visible what is holy.
-
-**ASHA** is a connected‑lens AR game for **Snap Spectacles** that draws its symbols and language from Zoroastrian cosmology. Players gather around a shared luminous **Arena Orb**, summon one of the five primal elements, and let the matrix of cosmic order resolve who carried the truer rhythm that round.
-
-> *On this blessed day, may we align ourselves more deeply with Asha through good thoughts, good words, and good deeds — and choose truth, purity, and divine order over falsehood and chaos.*
+**ASHA** is built **for Spectacles**: colocated **Connected Lens** sessions, hand‑first UI (SIK), five elemental “cards” (**ATAR · ABAN · ZAM · VAYU · KHSHATHRA**), a shared **Arena Orb**, solo vs **Magi** bots, and optional world placement + XR polish layers. Everything is authored in **Lens Studio** with TypeScript.
 
 ---
 
@@ -127,21 +119,17 @@ You can still drop **GPU particle templates** or richer VFX under the assigned p
 
 ---
 
-## ✦ Getting Started
+## ✦ Getting started *(Spectacles team)*
 
 ### Prerequisites
 - macOS or Windows
 - **[Lens Studio](https://ar.snap.com/lens-studio) 5.15** or newer
-- A Snap account paired with **[Spectacles](https://www.spectacles.com/)** (for on‑device testing)
+- **[Spectacles](https://www.spectacles.com/)** hardware + paired account for on‑device validation
 
-### Clone & Open
-```bash
-git clone https://github.com/urbanpeppermint/Asha.git
-cd Asha
-open Asha.esproj   # macOS — or open the project from Lens Studio's launcher
-```
+### Open the project
+Clone from your **internal** remote (or the team‑approved GitHub mirror if one exists), then open `Asha.esproj` in Lens Studio.
 
-The project ships with all required packages (SIK, Sync Kit) inside `Packages/` so it opens self‑contained.
+The repo ships with required packages (SIK, Sync Kit) under `Packages/` so the project opens self‑contained after clone.
 
 ### Run in the Editor
 1. Open `Asha.esproj` in **Lens Studio**.
@@ -189,7 +177,7 @@ Assets/
 2. **One source of truth.** A single shared `SyncEntity` holds all replicated state — no per‑player entities, no race conditions.
 3. **Phase‑driven UI.** Every visual layer reads `phaseProp` and renders the correct state, instead of being told.
 4. **Local + Connected first.** Solo and multiplayer share the same code path; bots are just non‑human slots.
-5. **Beauty over decoration.** Every glow, every pulse, every audio cue serves the rhythm of Asha — not the other way around.
+5. **Beauty over decoration.** Every glow, pulse, and cue should serve clarity and drama in the round — not noise.
 
 ---
 
@@ -223,33 +211,35 @@ Keep the same 5×5 matrix; add a **“strike pass”** only after reveal resolve
 - **Remember the table** — optional spatial anchor for arena root between launches (same room, next day).
 - **Spectator join** — phone or third Spectacles as read‑only orb + log (no `submitChoice` path).
 
+**Leaderboards** *(called out — we do not have this yet)*
+- **Session podium** — end‑of‑match board: best delta, most wins, ties broken cleanly (local + synced summary object).
+- **Persistent ladder** — weekly / all‑time rankings via **Lens Cloud** or edge functions, keyed by `displayName` or internal id (privacy + abuse review required).
+- **Solo Magi hall of fame** — best run streak vs N Magi at each difficulty preset.
+
 **Audio & voice**
 - **Stinger mix per element** — subtle leitmotif on pick + different resolve chord on draw vs win (still one `AudioComponent`, smarter playlists).
 - **Voice cue toggle** — optional one‑shot line per element on pick (localization + consent heavy; behind a setting).
 
 **Meta**
-- **Public ladder / seasons** — Snap Cloud or edge functions; only if you want ranked Asha as a live service (scope creep warning).
+- **Seasons / events** — time‑boxed leaderboards or cosmetic orb skins (only if product wants live ops; large scope).
 
 ---
 
 ## ✦ Credits
 
 - Concept, design, and dev: [@urbanpeppermint](https://github.com/urbanpeppermint)
-- Cosmology & blessing: ancient Avestan tradition — *Jashan of Asha Vahishta*
-- Built on **Snap's Spectacles platform**, **Lens Studio**, **Spectacles Interaction Kit**, and **Spectacles Sync Kit**
+- Creative inspo: *Jashan of Asha Vahishta* / fire‑and‑order imagery (naming & tone only).
+- Platform: **Snap Spectacles**, **Lens Studio**, **Spectacles Interaction Kit**, **Spectacles Sync Kit**
 
 ---
 
-## ✦ License
+## ✦ Use of this repository
 
-Released under the **MIT License** — share, remix, and align it with your own rhythm.
+**Proprietary / internal.** This codebase is maintained for **Spectacles team** workflows (review, QA, handoff). It is **not** offered as open source; copying, redistribution, or derivative public lenses are **not** permitted except under Snap’s internal policies and explicit approvals.
 
 ---
 
 <div align="center">
-
-> *Humata · Hukhta · Hvarshta*
-> **Good thoughts · Good words · Good deeds**
 
 ✦
 
