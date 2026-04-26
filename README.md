@@ -239,7 +239,8 @@ Keep the same 5×5 matrix; add a **“strike pass”** only after reveal resolve
 
 ## ✦ Credits
 
-- Concept, design, and dev: [@urbanpeppermint](https://github.com/urbanpeppermint)
+- Concept and dev: [@urbanpeppermint](https://github.com/urbanpeppermint)
+- Design: [forouzan1990](https://github.com/forouzan1990)
 - Creative inspo: *Jashan of Asha Vahishta* / fire‑and‑order imagery (naming & tone only).
 - Platform: **Snap Spectacles**, **Lens Studio**, **Spectacles Interaction Kit**, **Spectacles Sync Kit**
 
