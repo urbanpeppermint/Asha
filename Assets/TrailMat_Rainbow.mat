@@ -1,0 +1,220 @@
+- !<Material/9a51bcf1-60db-4a13-824f-fc9c260ca4de>
+  PackagePath: ""
+  PassesInfo:
+    - !<own> a2ab472f-13c3-4336-90cf-c18959b8bf62
+- !<PassInfo/a2ab472f-13c3-4336-90cf-c18959b8bf62>
+  CachedProperties:
+    - Port_AO_N014:
+        typeIdx: 4
+        value: {x: 1.000000, y: 1.000000, z: 1.000000}
+    - Port_Emissive_N014:
+        typeIdx: 4
+        value: {x: 1.000000, y: 1.000000, z: 1.000000}
+    - Port_SpecularAO_N014:
+        typeIdx: 4
+        value: {x: 1.000000, y: 1.000000, z: 1.000000}
+    - PreviewEnabled:
+        typeIdx: 0
+        value: 0
+    - alphaEnd:
+        typeIdx: 1
+        value: 1.000000
+    - alphaStart:
+        typeIdx: 1
+        value: 1.000000
+    - colorEnd:
+        typeIdx: 4
+        value: {x: 1.000000, y: 1.000000, z: 1.000000}
+    - colorMaxEnd:
+        typeIdx: 4
+        value: {x: 1.000000, y: 0.987640, z: 0.057832}
+    - colorMaxStart:
+        typeIdx: 4
+        value: {x: 0.094514, y: 0.782742, z: 1.000000}
+    - colorMinEnd:
+        typeIdx: 4
+        value: {x: 0.000000, y: 0.976806, z: 0.000000}
+    - colorMinStart:
+        typeIdx: 4
+        value: {x: 0.692241, y: 0.434394, z: 1.000000}
+    - colorRampMult:
+        typeIdx: 5
+        value: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+    - colorRampTexture:
+        typeIdx: 9
+        value:
+          id: fae7912b-4c55-416f-af2f-5b42fab10c33
+          sampler:
+            filteringMode: Trilinear
+            wrapModeU: Repeat
+            wrapModeV: Repeat
+            wrapModeW: Repeat
+            borderColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+            mipmaps: false
+          type: Texture2D
+    - colorRampTextureTransform:
+        typeIdx: 7
+        value:
+          0: {x: 1.000000, y: 0.000000, z: 0.000000}
+          1: {x: 0.000000, y: 1.000000, z: 0.000000}
+          2: {x: 0.000000, y: 0.000000, z: 1.000000}
+    - colorStart:
+        typeIdx: 4
+        value: {x: 1.000000, y: 1.000000, z: 1.000000}
+    - customForceOrigin:
+        typeIdx: 4
+        value: {x: 0.000000, y: 0.000000, z: 0.000000}
+    - customForceStrength:
+        typeIdx: 1
+        value: 1.000000
+    - externalSeed:
+        typeIdx: 1
+        value: 0.000000
+    - gravity:
+        typeIdx: 1
+        value: 0.000000
+    - lifeTimeConstant:
+        typeIdx: 1
+        value: 1.000000
+    - lifeTimeMinMax:
+        typeIdx: 3
+        value: {x: 0.400000, y: 0.800000}
+    - mainTexture:
+        typeIdx: 9
+        value:
+          id: 3ebd9c01-1444-418d-8e09-222f4a7a823a
+          sampler:
+            filteringMode: Trilinear
+            wrapModeU: Repeat
+            wrapModeV: Repeat
+            wrapModeW: Repeat
+            borderColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+            mipmaps: false
+          type: Texture2D
+    - mainTextureTransform:
+        typeIdx: 7
+        value:
+          0: {x: 1.000000, y: 0.000000, z: 0.000000}
+          1: {x: 0.000000, y: 1.000000, z: 0.000000}
+          2: {x: 0.000000, y: 0.000000, z: 1.000000}
+    - metallic:
+        typeIdx: 1
+        value: 0.000000
+    - noiseFrequency:
+        typeIdx: 4
+        value: {x: 3.000000, y: 0.000000, z: 3.000000}
+    - noiseMult:
+        typeIdx: 4
+        value: {x: 3.000000, y: 0.000000, z: 3.000000}
+    - normalTexTransform:
+        typeIdx: 7
+        value:
+          0: {x: 1.000000, y: 0.000000, z: 0.000000}
+          1: {x: 0.000000, y: 1.000000, z: 0.000000}
+          2: {x: 0.000000, y: 0.000000, z: 1.000000}
+    - rotationDrag:
+        typeIdx: 1
+        value: 0.000000
+    - rotationRandom:
+        typeIdx: 3
+        value: {x: -3.140000, y: 3.140000}
+    - rotationRate:
+        typeIdx: 3
+        value: {x: -2.000000, y: 2.000000}
+    - roughness:
+        typeIdx: 1
+        value: 0.000000
+    - sizeEnd:
+        typeIdx: 3
+        value: {x: 0.200000, y: 0.200000}
+    - sizeSpeed:
+        typeIdx: 1
+        value: 1.000000
+    - sizeStart:
+        typeIdx: 3
+        value: {x: 1.500000, y: 1.500000}
+    - spawnDuration:
+        typeIdx: 1
+        value: 0.000000
+    - spawnSphere:
+        typeIdx: 4
+        value: {x: 1.000000, y: 1.000000, z: 1.000000}
+    - timeGlobal:
+        typeIdx: 1
+        value: 1.000000
+    - trailFadeInOut:
+        typeIdx: 3
+        value: {x: 0.100000, y: 0.100000}
+    - trailFadeStartEnd:
+        typeIdx: 3
+        value: {x: 0.100000, y: 0.200000}
+    - trailLength:
+        typeIdx: 1
+        value: 2.000000
+    - trailTaper:
+        typeIdx: 3
+        value: {x: 1.000000, y: 0.000000}
+    - trailTex:
+        typeIdx: 9
+        value:
+          id: 27dc9272-9784-4007-a3f3-4846200a0f9d
+          sampler:
+            filteringMode: Trilinear
+            wrapModeU: Repeat
+            wrapModeV: Repeat
+            wrapModeW: Repeat
+            borderColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+            mipmaps: false
+          type: Texture2D
+    - trailTexTransform:
+        typeIdx: 7
+        value:
+          0: {x: 1.000000, y: 0.000000, z: 0.000000}
+          1: {x: 0.000000, y: 1.000000, z: 0.000000}
+          2: {x: 0.000000, y: 0.000000, z: 1.000000}
+    - trailWidth:
+        typeIdx: 1
+        value: 0.800000
+    - velocityDrag:
+        typeIdx: 4
+        value: {x: 1.000000, y: 1.000000, z: 1.000000}
+    - velocityMax:
+        typeIdx: 4
+        value: {x: 2.000000, y: 10.000000, z: 2.000000}
+    - velocityMin:
+        typeIdx: 4
+        value: {x: -2.000000, y: -10.000000, z: -2.000000}
+  DepthWrite: false
+  DepthTest: false
+  DepthFunction: LessEqual
+  TwoSided: true
+  ColorMask: {x: true, y: true, z: true, w: true}
+  CullMode: Back
+  PolygonOffset: {x: 0.000000, y: 0.000000}
+  FrustumCulling: Auto
+  FrustumCullPad: 0.000000
+  InstanceCount: 50
+  Defines:
+    - ALIGN_PARTICLES_TO_OPTION 0
+    - ALIGN_TO_CAMERA 0
+    - BASETEXTURE
+    - COLORRAMP
+    - LIFETIMEMINMAX
+    - MESHTYPE 0
+    - NODE_13_DROPLIST_ITEM 0
+    - NODE_213_DROPLIST_ITEM 0
+    - NODE_23_DROPLIST_ITEM 0
+    - NODE_67_DROPLIST_ITEM 0
+    - NODE_76_DROPLIST_ITEM 0
+    - NOISE
+    - TRAILS
+    - TRAILTEXTURE
+    - rotationSpace 0
+    - CONSTANTSPAWN
+    - PREWARMSPAWN
+    - COLORMINMAX
+    - TRAILBEHAVIOR 1
+  BlendMode: PremultipliedAlphaAuto
+  Properties:
+    {}
+  Pass: !<reference> 33458492-35a2-4a50-ac3c-44afe5486b16

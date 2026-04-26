@@ -7,6 +7,7 @@ const TAG = 'AshaArenaOrb'
 export class AshaArenaOrb extends BaseScriptComponent {
   @input orbText: SceneObject
   @input orbRoot: SceneObject
+  @input keepOrbChildrenEnabledOnStart: boolean = true
 
   private readonly log = new SyncKitLogger(TAG)
 
@@ -30,6 +31,14 @@ export class AshaArenaOrb extends BaseScriptComponent {
   }
 
   private resetOrb() {
+    if (this.orbRoot && this.keepOrbChildrenEnabledOnStart) {
+      this.orbRoot.enabled = true
+      const cc = this.orbRoot.getChildrenCount()
+      for (let i = 0; i < cc; i++) {
+        const child = this.orbRoot.getChild(i)
+        if (child) child.enabled = true
+      }
+    }
     this.setText(this.orbText, '🌐')
   }
 

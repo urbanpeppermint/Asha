@@ -10,6 +10,7 @@ import { ELEMENTS, MATRIX } from './AshaConstants'
 const TAG = 'AshaGameManager'
 const MAX_SLOTS = 6
 const SOLO_WAIT_SEC = 1.0
+const SOLO_BOT_PICK_DELAY_SEC = 1.8
 
 function sInt(p: StorageProperty<number>, fb: number): number {
   const v = p.currentOrPendingValue ?? p.currentValue
@@ -125,6 +126,7 @@ export class AshaGameManager extends BaseScriptComponent {
   private nextTrig       = StorageProperty.manualInt('nTrig', 0)
   private goTrig         = StorageProperty.manualInt('gTrig', 0)
   private advReq         = StorageProperty.manualInt('advR', 0)
+  private roundLogProp   = StorageProperty.manualString('rLog', '')
   /** MP setup: host-only round choice, mirrored to clients (-1 = none). */
   private mpHostRoundsPick = StorageProperty.manualInt('mHRd', -1)
 
@@ -162,13 +164,14 @@ export class AshaGameManager extends BaseScriptComponent {
   /** Host: ignore extra Next taps while final-round → menu transition is queued. */
   private endSequenceScheduled = false
   private nameRefreshScheduled = false
+  private soloAiSequenceActive = false
 
   // ── Lifecycle ─────────────────────────────────────────────────────────
   onAwake() {
     const all: StorageProperty<any>[] = [
       this.phaseProp, this.roundProp, this.totalRdsProp,
       this.aiCountProp, this.humanCountProp,
-      this.revealTrig, this.nextTrig, this.goTrig, this.advReq,
+      this.revealTrig, this.nextTrig, this.goTrig, this.advReq, this.roundLogProp,
       this.mpHostRoundsPick,
       this.c0,this.c1,this.c2,this.c3,this.c4,this.c5,
       this.s0,this.s1,this.s2,this.s3,this.s4,this.s5,
@@ -204,6 +207,9 @@ export class AshaGameManager extends BaseScriptComponent {
     this.revealTrig.onRemoteChange.add(() => this.onReveal())
     this.nextTrig.onRemoteChange.add(() => this.onNextRound())
     this.goTrig.onRemoteChange.add(() => this.onGameOver())
+    this.roundLogProp.onRemoteChange.add(() => {
+      if (sStr(this.phaseProp, '') === 'reveal') this.setText(this.battleLogText, sStr(this.roundLogProp, ''))
+    })
     if (SessionController.getInstance().isHost()) {
       this.advReq.onRemoteChange.add(() => this.hostHandleAdvance())
     }
@@ -423,6 +429,7 @@ export class AshaGameManager extends BaseScriptComponent {
     this.roundProp.setPendingValue(1)
     if (this.nextRoundButton) this.nextRoundButton.enabled = false
     this.setBtnLabel('NEXT ROUND')
+    this.roundLogProp.setPendingValue('')
 
     this.soloDecided = false
     this.hideStartMenuForSession()
@@ -505,6 +512,7 @@ export class AshaGameManager extends BaseScriptComponent {
     for (let i = humans; i < MAX_SLOTS; i++) {
       this.nProps[i].setPendingValue('')
     }
+    this.soloAiSequenceActive = false
   }
 
   // ── Player submits choice (called from ElementHandPanel) ──────────────
@@ -530,10 +538,17 @@ export class AshaGameManager extends BaseScriptComponent {
     const total = humans + ai
     if (total === 0) return
 
-    // AI fills slots humans..humans+ai-1 (NEVER overlaps with human slots)
-    for (let i = humans; i < humans + ai && i < MAX_SLOTS; i++) {
-      if (sInt(this.cProps[i], -1) === -1) {
-        this.cProps[i].setPendingValue(this.pickAi())
+    // Solo pacing: each Magi picks with a visible 1.8s cadence.
+    if (ai > 0) {
+      let pendingAi = 0
+      for (let i = humans; i < humans + ai && i < MAX_SLOTS; i++) {
+        if (sInt(this.cProps[i], -1) === -1) pendingAi++
+      }
+      if (pendingAi > 0) {
+        if (!this.soloAiSequenceActive) this.startSoloAiSequence(humans, ai)
+        this.log.i(`Waiting: humans picked, bots pending ${pendingAi}`)
+        this.setText(this.statusText, `... Magi choosing (${ai - pendingAi + 1}/${ai})`)
+        return
       }
     }
 
@@ -549,6 +564,48 @@ export class AshaGameManager extends BaseScriptComponent {
     }
 
     this.resolveAndReveal(total)
+  }
+
+  private startSoloAiSequence(humans: number, ai: number) {
+    if (this.soloAiSequenceActive) return
+    this.soloAiSequenceActive = true
+    this.runNextAiPick(humans, ai)
+  }
+
+  private runNextAiPick(humans: number, ai: number) {
+    if (!this.ready || !SessionController.getInstance().isHost()) {
+      this.soloAiSequenceActive = false
+      return
+    }
+    if (sStr(this.phaseProp, '') !== 'choosing') {
+      this.soloAiSequenceActive = false
+      return
+    }
+    const slot = this.findNextPendingAiSlot(humans, ai)
+    if (slot < 0) {
+      this.soloAiSequenceActive = false
+      this.checkAllChosen()
+      return
+    }
+    const magiIndex = slot - humans + 1
+    this.setText(this.statusText, `Magi ${magiIndex} is choosing...`)
+    const d = this.createEvent('DelayedCallbackEvent')
+    d.bind(() => {
+      if (sStr(this.phaseProp, '') !== 'choosing') {
+        this.soloAiSequenceActive = false
+        return
+      }
+      if (sInt(this.cProps[slot], -1) === -1) this.cProps[slot].setPendingValue(this.pickAi())
+      this.runNextAiPick(humans, ai)
+    })
+    d.reset(SOLO_BOT_PICK_DELAY_SEC)
+  }
+
+  private findNextPendingAiSlot(humans: number, ai: number): number {
+    for (let i = humans; i < humans + ai && i < MAX_SLOTS; i++) {
+      if (sInt(this.cProps[i], -1) === -1) return i
+    }
+    return -1
   }
 
   private pickAi(): number {
@@ -582,7 +639,8 @@ export class AshaGameManager extends BaseScriptComponent {
         this.sProps[i].setPendingValue(cur + deltas[i])
       }
 
-      this.buildBattleLog(names, choices, deltas, total)
+      const roundLog = this.buildBattleLog(names, choices, deltas, total)
+      this.roundLogProp.setPendingValue(roundLog)
 
       const trig = sInt(this.revealTrig, 0)
       this.revealTrig.setPendingValue(trig + 1)
@@ -594,7 +652,7 @@ export class AshaGameManager extends BaseScriptComponent {
     delay.reset(Math.max(0, this.revealDelaySec))
   }
 
-  private buildBattleLog(names: string[], choices: number[], deltas: number[], total: number) {
+  private buildBattleLog(names: string[], choices: number[], deltas: number[], total: number): string {
     const round = sInt(this.roundProp, 1)
     const lines: string[] = [`— Round ${round} Tauroctony —`]
 
@@ -618,7 +676,9 @@ export class AshaGameManager extends BaseScriptComponent {
       lines.push(`${names[i]}: ${sign}${d} (total ${sInt(this.sProps[i], 0)})`)
     }
 
-    this.setText(this.battleLogText, lines.join('\n'))
+    const text = lines.join('\n')
+    this.setText(this.battleLogText, text)
+    return text
   }
 
   // ── advanceToNextRound — wired to NextButton (any player can press) ──
@@ -698,6 +758,7 @@ export class AshaGameManager extends BaseScriptComponent {
     }
 
     if (phase === 'choosing') {
+      this.soloAiSequenceActive = false
       const humans = sInt(this.humanCountProp, 1)
       const ai = sInt(this.aiCountProp, 0)
       const total = humans + ai
@@ -709,6 +770,7 @@ export class AshaGameManager extends BaseScriptComponent {
       this.setText(this.statusText, 'Choose your element')
       this.setText(this.battleLogText,
         'Fire>Earth/Metal  Water>Fire/Metal  Earth>Water/Wind  Wind>Fire/Water  Metal>Earth/Wind')
+      this.roundLogProp.setPendingValue('')
     }
 
     this.syncUi(phase)
@@ -718,6 +780,11 @@ export class AshaGameManager extends BaseScriptComponent {
 
   private onReveal() {
     this.log.i('Reveal')
+    const syncedLog = sStr(this.roundLogProp, '')
+    if (syncedLog) {
+      this.setText(this.battleLogText, syncedLog)
+      return
+    }
     this.rebuildBattleLog()
   }
 
@@ -731,6 +798,13 @@ export class AshaGameManager extends BaseScriptComponent {
     for (let i = 0; i < total; i++) {
       choices.push(sInt(this.cProps[i], 0))
       names.push(sStr(this.nProps[i], `seat_${i}`))
+    }
+    for (let i = 0; i < choices.length; i++) {
+      const c = choices[i]
+      if (c < 0 || c > 4) {
+        this.log.w('Skip rebuildBattleLog: unresolved choice state')
+        return
+      }
     }
     const deltas = resolveRound(choices)
     const round = sInt(this.roundProp, 1)

@@ -27,12 +27,16 @@
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
     arenaOrbScript: false
+    buttonLabelTexts: false
     buttonObjects: false
     buttonParent: false
+    cardBackObjects: false
     cardFaceObjects: false
+    flipDurationSec: false
     gameManager: false
     tooltipScript: false
     vfxScript: false
+    winnerPulseSec: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -47,10 +51,16 @@
         []
       cardFaceObjects: !<reference.SceneObject[]>
         []
+      cardBackObjects: !<reference.SceneObject[]>
+        []
+      buttonLabelTexts: !<reference.SceneObject[]>
+        []
       buttonParent: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       arenaOrbScript: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
       vfxScript: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
       tooltipScript: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      flipDurationSec: 0.450000
+      winnerPulseSec: 1.500000
   ScriptTypes:
     -
       {}
@@ -58,7 +68,11 @@
     - // @input AssignableType gameManager
     - "// @input SceneObject[] buttonObjects = {}"
     - "// @input SceneObject[] cardFaceObjects = {}"
+    - "// @input SceneObject[] cardBackObjects = {}"
+    - "// @input SceneObject[] buttonLabelTexts = {}"
     - // @input SceneObject buttonParent
     - // @input Component.ScriptComponent arenaOrbScript
     - // @input Component.ScriptComponent vfxScript
     - // @input Component.ScriptComponent tooltipScript
+    - // @input float flipDurationSec = 0.45
+    - // @input float winnerPulseSec = 1.5

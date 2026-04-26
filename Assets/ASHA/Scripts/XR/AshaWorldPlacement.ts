@@ -20,7 +20,7 @@ function sn(p: StorageProperty<number>, fb: number): number {
 export class AshaWorldPlacement extends BaseScriptComponent {
 
   @input arenaRoot: SceneObject
-  @input hideArenaUntilPlaced: boolean = true
+  @input hideArenaUntilPlaced: boolean = false
   @input filterEnabled: boolean = true
   @input useSemanticClassification: boolean = false
   @input allowFallbackWithoutHit: boolean = false
@@ -28,9 +28,12 @@ export class AshaWorldPlacement extends BaseScriptComponent {
   @input fallbackDelaySec: number = 3.0
   @input defaultScale: number = 1.0
   @input scaleStep: number = 0.1
+  @input startPlacementOnAwake: boolean = false
+  @input requireButtonToEnterPlacement: boolean = true
+  @input syncPlacementAcrossUsers: boolean = false
   @input('SceneObject') @allowUndefined placementIndicatorRoot: SceneObject
   @input('SceneObject') @allowUndefined placementHintText: SceneObject
-  @input pendingHint: string = 'Look at a surface, then release pinch to place'
+  @input pendingHint: string = 'Tap Place Arena, then release pinch to confirm'
 
   private readonly log = new SyncKitLogger(TAG)
   private placed = false
@@ -44,6 +47,7 @@ export class AshaWorldPlacement extends BaseScriptComponent {
   private lastHitPos: vec3 | null = null
   private lastHitRot: quat | null = null
   private syncedVersionSeen = -1
+  private placementButtonArmed = false
 
   // Shared transform (same arena pose/scale across devices)
   private px = StorageProperty.manualFloat('arenaPx', 0)
@@ -76,7 +80,11 @@ export class AshaWorldPlacement extends BaseScriptComponent {
   }
 
   public enablePlacementMode() {
+    if (this.requireButtonToEnterPlacement && !this.placementButtonArmed) return
     this.inPlacementMode = true
+    this.lastHitPos = null
+    this.lastHitRot = null
+    this.placementButtonArmed = false
     this.updateIndicator(true)
     this.beginWorldQuery()
   }
@@ -91,17 +99,24 @@ export class AshaWorldPlacement extends BaseScriptComponent {
     if (!this.lastHitPos || !this.lastHitRot) return
     this.commitSharedPlacement(this.lastHitPos, this.lastHitRot, this.readCurrentScale())
   }
+  /** Wire this directly to the "Place Arena" button triggerUp callback. */
+  public startPlacementByButton() {
+    this.placementButtonArmed = true
+    this.enablePlacementMode()
+  }
 
   public scaleUp() { this.adjustScale(+this.scaleStep) }
   public scaleDown() { this.adjustScale(-this.scaleStep) }
 
   private onStart() {
+    if (!this.startPlacementOnAwake) return
     const d = this.createEvent('DelayedCallbackEvent')
     d.bind(() => { if (!this.placed) this.enablePlacementMode() })
-    d.reset(1.0)
+    d.reset(0.2)
   }
 
   private onSyncReady() {
+    if (!this.syncPlacementAcrossUsers) return
     ;(this.ver as any).onRemoteChange?.add?.(() => this.onSharedPlacementChanged())
     this.onSharedPlacementChanged()
   }
@@ -244,6 +259,11 @@ export class AshaWorldPlacement extends BaseScriptComponent {
   }
 
   private commitSharedPlacement(pos: vec3, rot: quat, scale: number) {
+    if (!this.syncPlacementAcrossUsers) {
+      this.applyLocalPlacement(pos, rot, scale)
+      this.log.i('Arena placement committed (local only)')
+      return
+    }
     this.px.setPendingValue(pos.x)
     this.py.setPendingValue(pos.y)
     this.pz.setPendingValue(pos.z)

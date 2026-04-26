@@ -105,10 +105,12 @@ or any scene object named `StartMenu`.
 | gameManager       | → ASHA_GameManager             |
 | buttonObjects     | → [AtarBtn, AbanBtn, ZamBtn, VayuBtn, KshathraBtn] |
 | cardFaceObjects   | → [AtarFace, AbanFace, ZamFace, VayuFace, KshathraFace] (optional local PNG face visuals) |
+| cardBackObjects   | → [AtarBack, AbanBack, ZamBack, VayuBack, KshathraBack] (optional back PNG used by flip) |
 | buttonParent      | → ASHA_HandPanel (itself)      |
 | arenaOrbScript    | → (optional) ASHA_ArenaOrb's script component |
 | vfxScript         | → (optional) ASHA_VFX's script component |
 | tooltipScript     | → (optional) ASHA_Tooltip's script component |
+| flipDurationSec   | 0.24 (default) |
 
 ### AshaSoloSetupPanel (on `ASHA_SoloSetup`)
 
@@ -218,23 +220,25 @@ EnableOnReady
 | Field            | Drag from scene |
 |------------------|-----------------|
 | `arenaRoot`      | `Arena` root object |
-| `hideArenaUntilPlaced` | true (recommended; matches sample behavior) |
+| `hideArenaUntilPlaced` | false (recommended when using initial in-scene arena pose) |
 | `fallbackDistance` | 80 (default cm) |
 | `filterEnabled` | true (recommended) |
 | `useSemanticClassification` | false by default; set true only if Experimental APIs are enabled |
-| `allowFallbackWithoutHit` | **false** to force real surface hit before cards |
+| `allowFallbackWithoutHit` | optional (only used while placement mode is active) |
 | `fallbackDelaySec` | 3.0 (used only when fallback is enabled) |
 | `defaultScale` | initial arena scale (shared across users) |
 | `scaleStep` | amount used by `scaleUp/scaleDown` |
+| `startPlacementOnAwake` | false (recommended; placement starts only after button press) |
 | `placementIndicatorRoot` | optional reticle/marker SceneObject shown while waiting for placement |
 | `placementHintText` | optional world Text object shown while waiting |
 | `pendingHint` | message shown in `placementHintText` while placement is pending |
 
-`AshaWorldPlacement` exposes `isPlaced()` and is used by `AshaXrCoordinator` to gate card input.
+`AshaWorldPlacement` exposes `isPlaced()` and can be used by `AshaXrCoordinator` to gate card input only if you enable that option.
 If you do not wire `placementIndicatorRoot`/`placementHintText`, no visual cue will appear (script logs one warning).
 
-Placement interaction now matches sample style:
-- live hit cursor follows valid surface hits
+Placement interaction now matches sample style, but starts only when requested:
+- wire a UI button `Place Arena` -> `AshaWorldPlacement.startPlacementByButton()`
+- after pressing button, live hit cursor follows valid surface hits
 - releasing pinch/trigger commits placement
 - committed placement is synced to all devices (same position/rotation/scale)
 
@@ -292,6 +296,7 @@ Optional control buttons can call:
 | `elementTrail` | **Script Component** on `ElementTrail` object |
 | `handAura` | **Script Component** on `HandAura` object |
 | `worldPlacement` | **Script Component** on `WorldPlacement` object |
+| `requirePlacementBeforeCards` | false (recommended for optional placement button flow) |
 | `cardsMenuRoot` | hand cards root (`ASHA_HandPanel/buttonParent`) |
 | `handPanelScript` | **Script Component** on `ASHA_HandPanel` (`ElementHandPanel`) |
 
@@ -300,9 +305,8 @@ What it drives:
 - reveal gong + orb reveal VFX
 - per-round local win/lose stingers
 - opponent reveal sounds from `opponentAudioSources`
-- **cards gate:** in `choosing`, keeps cards hidden until `worldPlacement.isPlaced()` is true
-- gate is enforced both on `cardsMenuRoot.enabled` and `handPanelScript.setEnabled(...)` so GameManager cannot re-show cards early
-- if `worldPlacement` is not wired, choosing remains blocked (fail-safe)
+- optional cards gate (when `requirePlacementBeforeCards=true`): in `choosing`, keeps cards hidden until `worldPlacement.isPlaced()` is true
+- gate enforcement still drives both `cardsMenuRoot.enabled` and `handPanelScript.setEnabled(...)`
 
 #### AshaXrPickFeedback
 
@@ -346,7 +350,8 @@ Behavior:
 
 1. World placement: look at table/floor for 1 second; arena should place from World Query hit, else fallback.
 2. During placement, card menu should stay hidden/disabled (no element picks yet).
-3. After placement succeeds/fallback completes, cards appear and can be selected.
+3. Press `Place Arena`, then place on surface with pinch/trigger release.
+4. After placement succeeds/fallback completes, cards appear and can be selected.
 4. Pick element in solo: hear element pick sound (from `AshaAudio`).
 5. Hover cards: aura sphere lights + optional tick.
 6. Reveal: orb tint/pulse + reveal burst + gong.
@@ -369,7 +374,7 @@ Behavior:
 | AshaHandTooltip.ts      | Element info on hover           |
 | AshaArenaOrb.ts         | Center orb visual               |
 | AshaVfx.ts              | Selection/reveal VFX            |
-| XR/AshaWorldPlacement.ts | Surface/fallback arena placement |
+| XR/AshaWorldPlacement.ts | Surface placement with optional button-triggered start |
 | XR/AshaAudio.ts          | Element/reveal/result/hover audio |
 | XR/AshaElementTrail.ts   | Local trail follow after pick |
 | XR/AshaOrbVfx.ts         | Orb reveal pulse/tint/element burst |

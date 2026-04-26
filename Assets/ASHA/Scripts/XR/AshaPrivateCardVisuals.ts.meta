@@ -27,8 +27,6 @@
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
     backAnchors: false
-    floatAmplitudeCm: false
-    floatSpeedHz: false
     gameManager: false
     hideWhenAllChosen: false
     keepLocalFaceAfterChoice: false
@@ -52,8 +50,6 @@
         []
       hideWhenAllChosen: true
       keepLocalFaceAfterChoice: true
-      floatAmplitudeCm: 2.500000
-      floatSpeedHz: 0.800000
   ScriptTypes:
     -
       {}
@@ -64,5 +60,3 @@
     - "// @input SceneObject[] backAnchors = {}"
     - // @input bool hideWhenAllChosen = true
     - // @input bool keepLocalFaceAfterChoice = true
-    - // @input float floatAmplitudeCm = 2.5
-    - // @input float floatSpeedHz = 0.8

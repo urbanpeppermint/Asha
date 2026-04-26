@@ -2,6 +2,7 @@
 export class AshaVfx extends BaseScriptComponent {
   @input selectionFx: SceneObject
   @input revealFx: SceneObject
+  @input selectionFxDurationSec: number = 3.0
 
   onAwake() {
     if (this.selectionFx) this.selectionFx.enabled = false
@@ -9,7 +10,7 @@ export class AshaVfx extends BaseScriptComponent {
   }
 
   public playSelection(_elementId: number) {
-    this.burst(this.selectionFx, 0.25)
+    this.burst(this.selectionFx, Math.max(0.1, this.selectionFxDurationSec))
   }
 
   public playReveal() {

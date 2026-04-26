@@ -36,7 +36,10 @@
     pendingHint: false
     placementHintText: false
     placementIndicatorRoot: false
+    requireButtonToEnterPlacement: false
     scaleStep: false
+    startPlacementOnAwake: false
+    syncPlacementAcrossUsers: false
     useSemanticClassification: false
   ScriptTypesHidden:
     {}
@@ -56,6 +59,9 @@
       fallbackDelaySec: !<float> 3.000000
       defaultScale: !<float> 1.000000
       scaleStep: 0.100000
+      startPlacementOnAwake: false
+      requireButtonToEnterPlacement: true
+      syncPlacementAcrossUsers: false
       placementIndicatorRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       placementHintText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       pendingHint: Look at a table/floor to place arena
@@ -64,7 +70,7 @@
       {}
   InputLines:
     - // @input SceneObject arenaRoot
-    - // @input bool hideArenaUntilPlaced = true
+    - // @input bool hideArenaUntilPlaced
     - // @input bool filterEnabled = true
     - // @input bool useSemanticClassification
     - // @input bool allowFallbackWithoutHit
@@ -72,6 +78,9 @@
     - // @input float fallbackDelaySec = 3
     - // @input float defaultScale = 1
     - // @input float scaleStep = 0.1
+    - // @input bool startPlacementOnAwake
+    - // @input bool requireButtonToEnterPlacement = true
+    - // @input bool syncPlacementAcrossUsers
     - // @input SceneObject placementIndicatorRoot
     - // @input SceneObject placementHintText
-    - '// @input string pendingHint = "Look at a surface, then release pinch to place"'
+    - '// @input string pendingHint = "Tap Place Arena, then release pinch to confirm"'

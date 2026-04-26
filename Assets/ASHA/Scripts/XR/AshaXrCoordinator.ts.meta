@@ -33,6 +33,7 @@
     handAura: false
     handPanelScript: false
     orbVfx: false
+    requirePlacementBeforeCards: false
     worldPlacement: false
   ScriptTypesHidden:
     {}
@@ -49,6 +50,7 @@
       elementTrail: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
       handAura: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
       worldPlacement: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      requirePlacementBeforeCards: false
       cardsMenuRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       handPanelScript: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
@@ -61,5 +63,6 @@
     - // @input Component.ScriptComponent elementTrail
     - // @input Component.ScriptComponent handAura
     - // @input Component.ScriptComponent worldPlacement
+    - // @input bool requirePlacementBeforeCards
     - // @input SceneObject cardsMenuRoot
     - // @input Component.ScriptComponent handPanelScript

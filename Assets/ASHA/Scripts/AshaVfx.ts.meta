@@ -28,6 +28,7 @@
   ScriptInputsHidden:
     revealFx: false
     selectionFx: false
+    selectionFxDurationSec: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -39,9 +40,11 @@
   DefaultScriptInputs:
     - selectionFx: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       revealFx: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      selectionFxDurationSec: !<float> 3.000000
   ScriptTypes:
     -
       {}
   InputLines:
     - // @input SceneObject selectionFx
     - // @input SceneObject revealFx
+    - // @input float selectionFxDurationSec = 3

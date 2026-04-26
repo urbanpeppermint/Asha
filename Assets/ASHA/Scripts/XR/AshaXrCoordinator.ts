@@ -39,6 +39,7 @@ export class AshaXrCoordinator extends BaseScriptComponent {
   @input('Component.ScriptComponent') @allowUndefined elementTrail: ScriptComponent
   @input('Component.ScriptComponent') @allowUndefined handAura: ScriptComponent
   @input('Component.ScriptComponent') @allowUndefined worldPlacement: ScriptComponent
+  @input requirePlacementBeforeCards: boolean = false
   @input('SceneObject') @allowUndefined cardsMenuRoot: SceneObject
   @input('Component.ScriptComponent') @allowUndefined handPanelScript: ScriptComponent
 
@@ -92,6 +93,11 @@ export class AshaXrCoordinator extends BaseScriptComponent {
       this.applyCardsEnabled(false, hp)
       return
     }
+    if (!this.requirePlacementBeforeCards) {
+      this.applyCardsEnabled(true, hp)
+      if (this.cardsGateAnnounced) this.cardsGateAnnounced = false
+      return
+    }
     const wp = this.worldPlacement as unknown as AshaWorldPlacement | null
     const hasWp = !!wp && typeof wp.isPlaced === 'function'
     const placed = hasWp ? (wp.isPlaced() === true) : false
@@ -102,7 +108,7 @@ export class AshaXrCoordinator extends BaseScriptComponent {
     this.applyCardsEnabled(placed, hp)
     if (!placed && !this.cardsGateAnnounced) {
       this.cardsGateAnnounced = true
-      this.gameManager.showSetupHint?.('Place arena on surface first...')
+      this.gameManager.showSetupHint?.('Tap Place Arena, then place it on a surface')
     }
     if (placed && this.cardsGateAnnounced) {
       this.cardsGateAnnounced = false
@@ -141,6 +147,13 @@ export class AshaXrCoordinator extends BaseScriptComponent {
     const n = gm.getSlotCount()
     const choices: number[] = []
     for (let i = 0; i < n; i++) choices.push(gm.getSlotChoice(i))
+    for (let i = 0; i < choices.length; i++) {
+      const c = choices[i]
+      if (c < 0 || c > 4) {
+        this.log.w('Skip reveal round effects: unresolved choice state')
+        return
+      }
+    }
     const my = gm.getMySlot()
     const mine = my >= 0 && my < choices.length ? choices[my] : -1
     if (mine >= 0 && mine <= 4) orb?.playReveal(mine)

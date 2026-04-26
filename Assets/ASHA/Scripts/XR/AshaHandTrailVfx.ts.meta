@@ -1,0 +1,61 @@
+- !<AssetImportMetadata/40b02ba3-1f8f-4efc-bd7b-c0feae7402bd>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> f6403acd-fcd4-49fe-8fd1-43550e3e941c
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> f6403acd-fcd4-49fe-8fd1-43550e3e941c
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> a3616d10-d808-4f57-9a5f-f47b0b516b39
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/a3616d10-d808-4f57-9a5f-f47b0b516b39>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 95e1b95f-e5b4-489d-868f-16cf84a01e53
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    leftElementTrails: false
+    leftHandTracker: false
+    leftRainbowTrail: false
+    rightElementTrails: false
+    rightHandTracker: false
+    rightRainbowTrail: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - rightHandTracker: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      leftHandTracker: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      rightElementTrails: !<reference.SceneObject[]>
+        []
+      leftElementTrails: !<reference.SceneObject[]>
+        []
+      rightRainbowTrail: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      leftRainbowTrail: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input SceneObject rightHandTracker
+    - // @input SceneObject leftHandTracker
+    - "// @input SceneObject[] rightElementTrails = {}"
+    - "// @input SceneObject[] leftElementTrails = {}"
+    - // @input SceneObject rightRainbowTrail
+    - // @input SceneObject leftRainbowTrail

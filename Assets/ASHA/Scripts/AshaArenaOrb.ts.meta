@@ -26,6 +26,7 @@
   ExportUid: 00000000-0000-0000-0000-000000000000
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
+    keepOrbChildrenEnabledOnStart: false
     orbRoot: false
     orbText: false
   ScriptTypesHidden:
@@ -39,9 +40,11 @@
   DefaultScriptInputs:
     - orbText: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       orbRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      keepOrbChildrenEnabledOnStart: true
   ScriptTypes:
     -
       {}
   InputLines:
     - // @input SceneObject orbText
     - // @input SceneObject orbRoot
+    - // @input bool keepOrbChildrenEnabledOnStart = true
